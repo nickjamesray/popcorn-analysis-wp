@@ -1,0 +1,56 @@
+
+#youtubeLinkField, #youtubeActiveLink{
+	text-align: center;
+}
+#adminPopcornWrapper{
+	margin: 0 auto;
+	width: 500px;
+}
+#adminPopcorn{
+	width: 490px;
+	margin: 0 auto;
+
+}
+
+#cancelChangeVideo{
+	padding: 5px 10px;
+}
+#addVideoLinkBox, #initOptions{
+	
+	margin: 0 auto;
+	width: 480px;
+	padding: 15px;
+	border: dotted 1px #666;
+	margin-top: 15px;
+}
+#addVideoLinkBox h2, #initOptions h2{
+	line-height: 21px;
+	margin-top: 0px;
+	padding-top: 0px;
+	margin-bottom: 0px;
+}
+#addVideoLinkBox p, #initOptions p{
+	margin-top: 5px;
+}
+#videoTime{
+	color: red;
+}
+.wp-editor-container{
+	background-color: white;
+	
+}
+#vidOutcomeLabel{
+	float: left;
+}
+
+#outcomeList{
+
+	width: 150px;
+	margin: 0 auto;
+	padding-right: 20px;
+}
+.colorSwatch{
+	height: 50px;
+	width: 50px;
+	background-color: black;
+}
