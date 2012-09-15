@@ -14,7 +14,7 @@ class PopcornLM_Subject {
 		add_action('wp_ajax_popcornlm-single-subject', array($this, 'ajaxSingleSubject'));
 		add_action('add_meta_boxes', array($this,'registerMetaBoxes'));
 		
-	//	add_action('admin_menu',array($this,'removeSubmit'));
+		add_action('admin_menu',array($this,'removeSubmit'));
 		
 		add_filter( 'post_row_actions', array($this,'noQuickEdit'), 10, 1 );
 		add_filter('get_sample_permalink_html', array($this,'perm'), '',4);
@@ -23,6 +23,10 @@ class PopcornLM_Subject {
 		
 		//image size for subject thumbs.
 		add_image_size('popcornlm-subject-thumb',200,200);
+		
+		
+		add_filter( 'screen_layout_columns', array($this,'so_screen_layout_columns') );
+		add_filter( 'get_user_option_screen_layout_popcornlm_subjects', array($this,'so_screen_layout_post') );
 		
 	}
 	
@@ -82,7 +86,34 @@ class PopcornLM_Subject {
 		
 	}
 	
+	public function so_screen_layout_columns($columns ) {
+	    $columns['post'] = 1;
+	    return $columns;
+	}
+	
+
+	public function so_screen_layout_post() {
+	    return 1;
+	}
+	
+	
 	public function showPopcornSubjectBox(){
+			// Use nonce for verification
+			echo '<input type="hidden" name="custom_meta_box_nonce" value="'.wp_create_nonce(POPCORNLM_BASENAME).'" />';
+		?>
+		<h2>Defining a person/topic:</h2>
+		<p>Name the person/topic in the title bar above, then fill out optional info below.</p>
+		
+		<label for="subjectSubhead">Subheading (e.g. position): </label>
+		<input type="text" name="subjectSubhead" id="subjectSubhead" /><br />
+		<label for="subjectInfo">Background Info: </label>
+		<input type="textarea" name="subjectInfo" id="subjectInfo" /><br />
+		
+		
+		<br /><br />
+			<input name="original_publish" type="hidden" id="original_publish" value="Publish" />
+				<input type="submit" name="publish" id="publish" class="button-primary" value="Create/Update Subject" tabindex="5" accesskey="p"  />
+		<?php
 		
 	}
 	

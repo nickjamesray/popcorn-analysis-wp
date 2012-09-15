@@ -43,8 +43,8 @@ class PopcornLM_Label {
 			'name'=>'Default True/Uncertain/False',
 			'colors'=>array(
 				'True'=>'33BB00',
-				'False'=>'CC1100',
-				'Uncertain'=>'444444'
+				'Uncertain'=>'444444',
+				'False'=>'CC1100'
 			)
 		);
 	
@@ -112,27 +112,31 @@ class PopcornLM_Label {
 				
 
 				document.getElementById('colContainer-'+now).appendChild(input);
-		
+			jQuery('#colContainer-'+now).append('<span class="sureDelete"><a href="#" class="deleteTemplateEntry">Delete</a></span>');
 			jQuery("#colField-"+now).attr('name','col['+now+']');
 		
-		var numCol = jQuery('.singleTemplate').length;
+	
 		
-		if(numCol>=8){
-			jQuery('.templateAdd').hide();
-		}
+	
 		
 		e.preventDefault();
 		});
 		
-		jQuery('.templateRemove').live('click',function(e){
+		jQuery('.deleteTemplateEntry').live('click',function(e){
+			jQuery(this).parent().html('Confirm delete?  <a href="#" class="confirmDeleteTemplateEntry">Yes</a> | <a href="#" class="cancelDeleteTemplateEntry">No</a>');
 			
-			
-			if(numCol<=8){
-				jQuery('.templateAdd').show();
-			}
 			e.preventDefault();
 		});
-	
+		jQuery('.cancelDeleteTemplateEntry').live('click',function(e){
+			jQuery(this).parent().html('<span class="sureDelete"><a href="#" class="deleteTemplateEntry">Delete</a></span>');
+			
+			e.preventDefault();
+		});
+		jQuery('.confirmDeleteTemplateEntry').live('click',function(e){
+			jQuery(this).parent().parent().html('');
+			e.preventDefault();
+		});
+		
 		
 		});
 		
@@ -151,8 +155,8 @@ class PopcornLM_Label {
 		
 		?>
 		<h2>Setting up the template:</h2>
-		<p>For each label (e.g. True,False,Funny,etc.) insert the label name, and choose a color. This color will help identify the label in the player.</p>
-		
+		<p>For each label (e.g. True,False,Funny,etc.) insert the label name, and choose a color. This color will help identify the label in the player. Don't forget to put a title above! When you are done making changes, click "Create/Update Label Template" to commit your changes.<br /><strong>Note: Deleting labels that are applied to comment blocks will cause those blocks to revert to "none" which has no color or label.</strong></p>
+		<div style="margin: 0 auto; width: 400px;">
 		<div id="templateInfo">
 		<?php
 			$labelMeta = get_post_custom();
@@ -160,20 +164,27 @@ class PopcornLM_Label {
 				
 			
 				if(!empty($labelMeta['labelVals'][0])&&$labelMeta['labelVals'][0]!='[]'){
-						$data = json_decode($labelMeta['labelVals'][0]);
+						$labelMetaVals = str_replace("\\","",$labelMeta['labelVals'][0]);
 						
+					//	$data = json_decode($labelMeta['labelVals'][0]);
+					$data = json_decode($labelMetaVals);
+					
 						foreach($data as $id=>$info){
 					
 						?>
 						<div class="singleTemplate"><input type="text" name="label[<?php echo $id; ?>]" value="<?php echo $info->label; ?>" />
-					<input type="text" class="color" name="col[<?php echo $id; ?>]" value="<?php echo $info->col; ?>" size="3" />
+					<input type="text" class="color" name="col[<?php echo $id; ?>]" value="<?php echo $info->col; ?>" size="3" />     <span class="sureDelete"><a href="#" class="deleteTemplateEntry">Delete</a></span>
 					</div>
 						
 						<?php
 						}
 					
 				}else{
-					echo 'hey';
+					?>
+					<div class="singleTemplate"><input type="text" name="label[0]" />
+					<input type="text" class="color" name="col[0]" id="testColor" value="" size="3" /> 
+					</div>
+					<?php
 				}
 				
 				
@@ -189,8 +200,12 @@ class PopcornLM_Label {
 		
 		</div>
 		<br />
-		<a class="templateAdd button" href="#">Add Label</a><br />
-		<br /><br /><input class="button-primary" type="submit" name="save" value="Configure" id="initOptionsSubmit">
+		<a class="templateAdd button" href="#" style="text-align: center;">Add Label</a><br />
+		<br /><br />
+		
+		
+		<input name="original_publish" type="hidden" id="original_publish" value="Publish" />
+				<input type="submit" name="publish" id="publish" class="button-primary" value="Create/Update Label Template" tabindex="5" accesskey="p"  /></div>
 		
 		<?php
 	
@@ -256,7 +271,7 @@ class PopcornLM_Label {
 		    4 => 'Label Template updated.',
 		    /* translators: %s: date and time of the revision */
 		    5 => isset($_GET['revision']) ? sprintf( __('Label Template restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-		    6 => 'Label Template created.',
+		    6 => 'Label Template created/updated.',
 		    7 => 'Label Template saved.',
 		    8 => 'Label Template created.',
 		    9 => 'Label Template scheduled.',

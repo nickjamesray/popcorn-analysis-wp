@@ -16,6 +16,8 @@ require_once(dirname(__FILE__).'/lib/label.php');
 require_once(dirname(__FILE__).'/lib/display.php');
 require_once(dirname(__FILE__).'/lib/ajax.php');
 
+
+
 //Originally called Popcorn List Maker. PopcornLM is preserved to avoid plugin conflicts.
 class PopcornLM {
 	
@@ -200,23 +202,18 @@ class PopcornLM {
 			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Popcorn Analysis.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where they are relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. </p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
 			<p id="popcornLMInstructionBlock">there.</p>
 			
-			<style>
-		.add-new-h2{
-				display: none;
-			}
-			
-			</style>
+		
 			<script type="text/javascript">
 			
 			jQuery(".popcornLMInstructionLink").live('click',function(e){
 				jQuery("#popcornLMInstructionBlock").show();
-				jQuery(this).addClass("popcornLMInstructionHide").removeClass("popcornLMInstructionLink");
+				jQuery(this).addClass("popcornLMInstructionHide").removeClass("popcornLMInstructionLink").html('Hide Instructions');
 				
 				e.preventDefault();
 			});
 			jQuery(".popcornLMInstructionHide").live("click",function(e){
 				jQuery("#popcornLMInstructionBlock").hide();
-				jQuery(this).addClass("popcornLMInstructionLink").removeClass("popcornLMInstructionHide");
+				jQuery(this).addClass("popcornLMInstructionLink").removeClass("popcornLMInstructionHide").html('Show Instructions');
 			});
 			jQuery("#popcornLMInstructionBlock").hide();
 			
@@ -224,6 +221,34 @@ class PopcornLM {
 			    </div>
 			
 			<?php
+			}elseif($screen->id == 'edit-popcornlm_labels'){
+				?>
+					<div style="margin: 0 auto; margin-top: 30px; margin-bottom: 40px; border: dotted 1px #666; width: 80%; text-align: center;">
+					<h2>About Label Templates</h2>
+					<p>Label Templates allow you to create options for analyzing your video. For example, is a statement true or false? Funny or not? <br />There is one default that is always available, which is the example below.</p>
+					<?php
+					$default = $this->class['labels']->getDefaultLabel();
+					
+					
+					echo '<strong>'.$default['name'].':</strong><br /> <div style="margin: 0 auto; width: 300px; margin-bottom: 10px; margin-top: 10px;">';
+					foreach($default['colors'] as $name=>$color){
+						echo '<div style="float: left; margin-right: 20px; height: 20px;">'.esc_attr($name).': </div><div style="width: 20px; height: 20px; margin-right: 20px; background-color: #'.$color.'; float: left;"></div>';
+					}
+					?>
+					
+					<div style="clear: both;"></div>
+					</div>
+					</div>
+				
+				<?php
+			}elseif($screen->id == 'edit-popcornlm_subjects'){
+				?>
+				<div style="margin: 0 auto; margin-top: 30px; margin-bottom: 40px; border: dotted 1px #666; width: 80%; text-align: center;">
+				<h2>About People/Topics</h2>
+				<p>These are the people or topics covered in your video. Since they may end up in multiple videos, this is a good way to link them together and provide background info if needed.</p>
+				
+				</div>
+				<?php
 			}
 
 		    
@@ -776,7 +801,8 @@ jQuery(document).ready(function(){
 						//both color and name were set
 						
 						//needs sanitized
-						$labelArray[$id]['label'] = $_POST['label'][$id];
+						$labelArray[$id]['label'] = esc_attr($_POST['label'][$id]);
+						
 						$labelArray[$id]['col'] = $col;
 					}
 					
