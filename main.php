@@ -199,7 +199,7 @@ class PopcornLM {
 				
 				?>
 				<div style="margin: 0 auto; margin-top: 30px; margin-bottom: 40px; border: dotted 1px #666; width: 80%;">
-			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Popcorn Analysis.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where they are relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. </p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
+			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Popcorn Analysis.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where it is relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. </p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
 			<p id="popcornLMInstructionBlock">there.</p>
 			
 		
@@ -361,7 +361,7 @@ class PopcornLM {
 		wp_enqueue_style('jquery-ui-custom', plugin_dir_url(__FILE__).'css/jquery-ui-1.8.23.custom.css'); 
 ?>
 <link rel="stylesheet" href="<?php echo plugin_dir_url(__FILE__).'css/style.css';?>" />
-<script type="text/javascript" src="<?php echo plugin_dir_url(__FILE__).'js/popcorn-complete.min.js';?>"></script>
+<script type="text/javascript" src="<?php echo plugin_dir_url(__FILE__).'js/popcorn-ie8.js';?>"></script>
 
 <script type="text/javascript">
 
@@ -730,8 +730,8 @@ jQuery(document).ready(function(){
 		if (!wp_verify_nonce($_POST['custom_meta_box_nonce'], basename(__FILE__))) 
 			return $post_id;
 		// check autosave
-	
-		
+
+
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
 			return $post_id;
 		// check permissions
@@ -742,9 +742,9 @@ jQuery(document).ready(function(){
 			return $post_id;
 		}
 
-		
+
 		if("popcornlm"==$_POST['post_type']){
-			
+
 			$custom_meta_fields = $this->custom_meta_fields;
 			$subFields = $this->subFields;
 			$resource = array();
@@ -791,22 +791,22 @@ jQuery(document).ready(function(){
 
 
 		}elseif("popcornlm_labels"==$_POST['post_type']){
-			
+
 			if(!empty($_POST['col'])&&is_array($_POST['col'])){
-				
+
 				$labelArray = array();
 				foreach($_POST['col'] as $id=>$col){
 					//id is the time, should match with the id from $_POST['label']
 					if(!empty($_POST['label'][$id])&&$_POST['label'][$id]!==''){
 						//both color and name were set
-						
+
 						//needs sanitized
 						$labelArray[$id]['label'] = esc_attr($_POST['label'][$id]);
-						
+
 						$labelArray[$id]['col'] = $col;
 					}
-					
-					
+
+
 				}
 				//ready to json encode the array. meta key is 'labelVals'
 				$new = json_encode($labelArray);
@@ -816,9 +816,27 @@ jQuery(document).ready(function(){
 				}elseif(''==$new && $old){
 					delete_post_meta($post_id,'labelVals',$old);
 				}
-				
-				
+
+
 			}
+		}elseif("popcornlm_subjects"==$_POST['post_type']){
+			
+			$subjectArray = array();
+			$subjectArray['popcornsubjectinfo'] = $_POST['popcornsubjectinfo'];
+			$subjectArray['subjectThumb'] = $_POST['subjectThumb'];
+			$subjectArray['subjectSubhead'] = esc_attr($_POST['subjectSubhead']);
+
+			foreach($subjectArray as $k=>$v){
+				$new = $v;
+				$old = get_post_meta($post_id,$k,true);
+				if($new && $new != $old){
+					update_post_meta($post_id,$k,$new);
+				}elseif(''==$new && $old){
+					delete_post_meta($post_id,$k,$old);
+				}
+
+			}
+
 		}
 
 	}
