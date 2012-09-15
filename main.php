@@ -7,6 +7,10 @@ Version: 0.8
 Author URI: http://nickjamesray.com
 */
 
+
+define('POPCORNLM_PATH',plugin_dir_url(__FILE__));
+define('POPCORNLM_BASENAME',basename(__FILE__));
+
 require_once(dirname(__FILE__).'/lib/subject.php');
 require_once(dirname(__FILE__).'/lib/label.php');
 require_once(dirname(__FILE__).'/lib/display.php');
@@ -337,14 +341,36 @@ class PopcornLM {
 <script type="text/javascript">
 
 jQuery(document).ready(function(){
+	
+	if(jQuery('#<?php echo $this->prefix.'youtube'?>').length!==0){
 	var video = jQuery('#<?php echo $this->prefix.'youtube'?>').val();
 	if((video!=='')&&(ytVidId(video)!=0)){
 		jQuery('#adminPopcorn').height(276);
 		var pop = Popcorn.youtube('#adminPopcorn',video);
+		
+		pop.on("timeupdate",function(){
+			var time = Math.floor(this.currentTime());
+			this.emit("timeChange",{
+				time : time
+				});
+			});
+
+			pop.on("timeChange",function(data){
+				jQuery('#videoTime').html(secondsToMinutesHours(data.time));
+				jQuery('#videoTimeHidden').val(data.time);
+			});
+		
+		
+		
 		jQuery('#youtubeLinkField').hide();
 		jQuery('#youtubeActiveLink').html('<p>Active Link: '+video+'</p><a class="button-secondary" href="#" id="changeVideo" title="Change Video">Change Video</a>');
 	}else if(video!==''){
 		alert('YouTube link is not valid. Please double check.');
+	}else{
+		jQuery('#initOptions').html('').hide();
+	}
+	
+	
 	}
 
 	function changeVideo(){
@@ -384,22 +410,7 @@ jQuery(document).ready(function(){
 	}
 
 
-if((video!=='')&&(ytVidId(video)!=0)){
-	pop.on("timeupdate",function(){
-		var time = Math.floor(this.currentTime());
-		this.emit("timeChange",{
-			time : time
-			});
-		});
 
-		pop.on("timeChange",function(data){
-			jQuery('#videoTime').html(secondsToMinutesHours(data.time));
-			jQuery('#videoTimeHidden').val(data.time);
-		});
-
-}else{
-	jQuery('#initOptions').html('').hide();
-}
 	
 
 		function secondsToMinutesHours(s){
@@ -648,52 +659,6 @@ if((video!=='')&&(ytVidId(video)!=0)){
 	
 		 ?>
 		
-		<?php
-		// Begin the field table and loop
-		echo '<table class="form-table">';
-		foreach ($custom_meta_fields as $field) {
-			// get value of this field if it exists for this post
-			$meta = get_post_meta($post->ID, $field['id'], true);
-
-			if($field['type']!='videoLink'&&$field['type']!='videoTime'){
-
-				// begin a table row with
-				echo '<tr>
-					<th><label for="'.$field['id'].'">'.$field['label'].'</label></th>
-				<td>';
-				switch($field['type']) {
-					case 'text':
-					echo '<input type="text" name="'.$field['id'].'" id="'.$field['id'].'" value="'.$meta.'" size="30" />
-					<br /><span class="description">'.$field['desc'].'</span>';
-					break;
-					case 'textarea':
-					echo '<textarea name="'.$field['id'].'" id="'.$field['id'].'" cols="60" rows="4">'.$meta.'</textarea>
-					<br /><span class="description">'.$field['desc'].'</span>';
-					break;
-					case 'checkbox':
-					echo '<input type="checkbox" name="'.$field['id'].'" id="'.$field['id'].'" ',$meta ? ' checked="checked"' : '','/>
-					<label for="'.$field['id'].'">'.$field['desc'].'</label>';
-					break;
-					case 'select':
-					echo '<select name="'.$field['id'].'" id="'.$field['id'].'">';
-					foreach ($field['options'] as $option) {
-						echo '<option', $meta == $option['value'] ? ' selected="selected"' : '', ' value="'.$option['value'].'">'.$option['label'].'</option>';
-					}
-					echo '</select><br /><span class="description">'.$field['desc'].'</span>';
-					break;
-					case 'slider':
-					$value = $meta != '' ? $meta : '0';
-					echo '<div id="'.$field['id'].'-slider"></div>
-					<input type="text" name="'.$field['id'].'" id="'.$field['id'].'" value="'.$value.'" size="5" />
-					<br /><span class="description">'.$field['desc'].'</span>';
-					break;
-				} //end switch
-				echo '</td></tr>';
-			}
-		} // end foreach
-		echo '</table>'; // end table
-		?>
-		
 		</div>
 		
 		<?php
@@ -709,7 +674,7 @@ if((video!=='')&&(ytVidId(video)!=0)){
 					if($linkBlockTest[0]=='popcornLM_linkBlock'){
 						if(isset($linkBlockTest[1])){
 							
-							echo 'yes';
+							echo $linkBlockTest[1];
 							
 							
 						}
@@ -732,12 +697,16 @@ if((video!=='')&&(ytVidId(video)!=0)){
 
 	// Save the Data
 	public function savePopcornMeta($post_id) {
-		$custom_meta_fields = $this->custom_meta_fields;
-		$subFields = $this->subFields;
+
+
+
+
 		// verify nonce
 		if (!wp_verify_nonce($_POST['custom_meta_box_nonce'], basename(__FILE__))) 
 			return $post_id;
 		// check autosave
+	
+		
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
 			return $post_id;
 		// check permissions
@@ -747,64 +716,92 @@ if((video!=='')&&(ytVidId(video)!=0)){
 		} elseif (!current_user_can('edit_post', $post_id)) {
 			return $post_id;
 		}
-		
-		$resource = array();
-		foreach($subFields as $subField){
-			$resource[$subField['id']] = $_POST[$subField['id']];
-		}
-		
-		$encode = json_encode($resource);
 
-		// loop through fields and save the data
-		foreach ($custom_meta_fields as $field) {
-			//youtube and content blocks are distinct
-			
-			if($field['id']==$this->prefix.'linkBlock'){
-				
-				$time = $_POST['timeOfPost'];
-				
-				$new = $encode;
-				
-				$key = $field['id'].'__'.$time;
-				
-				$old = get_post_meta($post_id, $key, true);
-				
-				if ($new && $new != $old && $time) {
-					update_post_meta($post_id, $key, $new);
-				} elseif ('' == $new && $old) {
-					delete_post_meta($post_id, $key, $old);
-				}
-			}elseif($field['id']==$this->prefix.'optionsBlock'){
-				
-			}else{
-				$old = get_post_meta($post_id, $field['id'], true);
-				
-				$new = $_POST[$field['id']];
-				if ($new && $new != $old) {
-					update_post_meta($post_id, $field['id'], $new);
-				} elseif ('' == $new && $old) {
-					delete_post_meta($post_id, $field['id'], $old);
-				}
-			}
-			
-			
-			
-			
-			
-			
-			
-			
-			
-		//	$new = $_POST[$field['id']];
-			
-		} // end foreach
-	}
-	
-	
-	
-	
-	
 		
+		if("popcornlm"==$_POST['post_type']){
+			
+			$custom_meta_fields = $this->custom_meta_fields;
+			$subFields = $this->subFields;
+			$resource = array();
+			foreach($subFields as $subField){
+				$resource[$subField['id']] = $_POST[$subField['id']];
+			}
+
+			$encode = json_encode($resource);
+
+			// loop through fields and save the data
+			foreach ($custom_meta_fields as $field) {
+				//youtube and content blocks are distinct
+
+				if($field['id']==$this->prefix.'linkBlock'){
+
+					$time = $_POST['timeOfPost'];
+
+					$new = $encode;
+
+					$key = $field['id'].'__'.$time;
+
+					$old = get_post_meta($post_id, $key, true);
+
+					if ($new && $new != $old && $time) {
+						update_post_meta($post_id, $key, $new);
+					} elseif ('' == $new && $old) {
+						delete_post_meta($post_id, $key, $old);
+					}
+				}elseif($field['id']==$this->prefix.'optionsBlock'){
+
+				}else{
+					$old = get_post_meta($post_id, $field['id'], true);
+
+					$new = $_POST[$field['id']];
+					if ($new && $new != $old) {
+						update_post_meta($post_id, $field['id'], $new);
+					} elseif ('' == $new && $old) {
+						delete_post_meta($post_id, $field['id'], $old);
+					}
+				}
+
+			} // end foreach
+
+
+
+		}elseif("popcornlm_labels"==$_POST['post_type']){
+			
+			if(!empty($_POST['col'])&&is_array($_POST['col'])){
+				
+				$labelArray = array();
+				foreach($_POST['col'] as $id=>$col){
+					//id is the time, should match with the id from $_POST['label']
+					if(!empty($_POST['label'][$id])&&$_POST['label'][$id]!==''){
+						//both color and name were set
+						
+						//needs sanitized
+						$labelArray[$id]['label'] = $_POST['label'][$id];
+						$labelArray[$id]['col'] = $col;
+					}
+					
+					
+				}
+				//ready to json encode the array. meta key is 'labelVals'
+				$new = json_encode($labelArray);
+				$old = get_post_meta($post_id,'labelVals',true);
+				if($new && $new != $old){
+					update_post_meta($post_id,'labelVals',$new);
+				}elseif(''==$new && $old){
+					delete_post_meta($post_id,'labelVals',$old);
+				}
+				
+				
+			}
+		}
+
+	}
+
+
+
+
+
+
 }
 
 
