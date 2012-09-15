@@ -116,7 +116,7 @@ class PopcornLM_Subject {
 		
 		<label for="subjectSubhead">Subheading (e.g. person's position): </label>
 		
-		<input type="text" name="subjectSubhead" id="subjectSubhead" value="<?php echo $subjectMeta['subjectSubhead'][0];?>" /><br /><br />
+		<input type="text" name="subjectSubhead" id="subjectSubhead" value="<?php echo $subjectMeta['subjectSubhead'][0];?>" size="32" /><br /><br />
 		
 		<label for="subjectThumb">Subject Image:<br /><small>Click the "Choose Image" button and upload the desired image. Once it is finished, scroll down and click "Insert into Post."</small></label>
 		<div id="subjectThumbContainer" style="width: 500px; margin-left: 100px;">
@@ -221,7 +221,7 @@ class PopcornLM_Subject {
 		    4 => 'Person/Topic updated.',
 		    /* translators: %s: date and time of the revision */
 		    5 => isset($_GET['revision']) ? sprintf( __('Person/Topic restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-		    6 => 'Person/Topic created.',
+		    6 => 'Person/Topic created/updated.',
 		    7 => 'Person/Topic saved.',
 		    8 => 'Person/Topic created.',
 		    9 => 'Person/Topic scheduled.',
