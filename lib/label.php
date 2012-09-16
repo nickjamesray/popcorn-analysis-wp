@@ -58,6 +58,20 @@ class PopcornLM_Label {
 			$array = $this->getDefaultLabel();
 			return $array;
 			break;
+			default:
+			$custom = get_post_meta($template_id,'labelVals',true);
+			if($custom){
+				//we know its a post
+				$array['name'] = get_the_title($template_id);
+				$labelMetaVals = str_replace("\\","",$custom);
+				$data = json_decode($labelMetaVals);
+				foreach($data as $k=>$val){
+					$array['colors'][$val->label] = $val->col;
+				}
+			}
+			
+			return $array;
+			break;
 		}
 		return false;
 	}

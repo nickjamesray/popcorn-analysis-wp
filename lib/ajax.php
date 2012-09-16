@@ -36,10 +36,24 @@ class PopcornLM_Ajax {
 	
 	public function SingleSubject(){
 		
+		$array = array();
 		$subject = get_page_by_title($_GET['subject'],ARRAY_A,'popcornlm_subjects');
-	
-		echo json_encode(array('data'=>$subject['ID']));
 		
+		$array['title'] = $_GET['subject'];
+		$array['id'] = $subject['ID'];
+		$subjectMeta = get_post_custom($subject['ID']);
+		if(!empty($subjectMeta['subjectThumb'])){
+			 $image = wp_get_attachment_image_src($subjectMeta['subjectThumb'][0], 'popcornlm-subject-thumb');
+			$array['image'] = $image[0];
+		}
+		if(!empty($subjectMeta['subjectSubhead'])){
+			$array['subhead'] = $subjectMeta['subjectSubhead'][0];
+		}
+		//eventually we will include the text body here, but not right now.
+		
+		
+		
+		echo json_encode(array('data'=>$array));
 		die();
 	}
 	

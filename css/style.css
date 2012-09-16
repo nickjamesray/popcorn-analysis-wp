@@ -68,3 +68,39 @@
 	width: 20px; 
 	margin-right: 20px;
 }
+
+
+
+.singleSubject{
+	width: 130px;
+	float: left;
+	border: dotted 1px #666;
+	margin: 10px;
+	min-height: 186px;
+}
+.subjectAdd{
+	
+	margin: 50px 0 10px 10px;
+	text-align: center;
+	margin-left: 10px;
+	width: 70%;
+	display: block;
+}
+.singleSubjectInput{
+	padding: 5px;
+	margin-top: 40px;
+	margin-left: 5px;
+}
+.subjectCancelAdd,.subjectRemove{
+	color: red;
+	font-size: 10px;
+}
+.singleSubjectPreview{
+	margin-top: 10px;
+}
+.singleSubjectPreviewImg{
+	max-height: 125px;
+	max-width: 125px;
+	display: block;
+	margin: 0 auto;
+}

@@ -172,15 +172,15 @@ class PopcornLM {
 
 		  $messages['popcornlm'] = array(
 		    0 => '', // Unused. Messages start at index 1.
-		    1 => 'Video updated.',
+		    1 => 'Video entry updated.',
 		    2 => 'Custom field updated.',
 		    3 => 'Custom field deleted.',
-		    4 => 'Video updated.',
+		    4 => 'Video entry updated.',
 		    /* translators: %s: date and time of the revision */
 		    5 => isset($_GET['revision']) ? sprintf( __('Book restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-		    6 => 'Video created.',
+		    6 => 'Video entry created/updated.',
 		    7 => 'Video saved.',
-		    8 => 'Video created.',
+		    8 => 'Video entry created/updated.',
 		    9 => 'Video scheduled.',
 		    10 => 'Video draft updated.'
 		  );
@@ -390,6 +390,9 @@ jQuery(document).ready(function(){
 		
 		jQuery('#youtubeLinkField').hide();
 		jQuery('#youtubeActiveLink').html('<p>Active Link: '+video+'</p><a class="button-secondary" href="#" id="changeVideo" title="Change Video">Change Video</a>');
+		
+	
+		
 	}else if(video!==''){
 		alert('YouTube link is not valid. Please double check.');
 	}else{
@@ -473,33 +476,61 @@ jQuery(document).ready(function(){
 
 	
 		//this needs changed so there is ONE button that adds, and each one has a delete next to it.
-	
-		jQuery('.elemAdd').live('click',function(e){
+		jQuery('.subjectAdd').live('click',function(e){
+			
+		var parent = jQuery(this).parent();	jQuery(this).hide().parent().find('.singleSubjectInput').show().find('.singleSubjectField').suggest(ajaxurl + '?action=popcornlm-subject-list', {
+				delay: 500,
+				minchars: 2,
+				onSelect: function(){
+					var data = {
+						action: 'popcornlm-single-subject',
+						subject : this.value
+						};
 
-		var newListElem = '	<div class="singleCol"><input type="text" name="" id="" value="" size="10" class="singleColText" /></div>';
-
-		jQuery('#colList').append(newListElem);
-		addSuggest();
-		var numCol = jQuery('.singleCol').length;
-		
-		if(numCol>=8){
-			jQuery('.elemAdd').hide();
-		}
-		
-		e.preventDefault();
+					jQuery.getJSON(ajaxurl, data, function(response){
+						
+						var output = '';
+						if(response.data.image!==undefined){
+							output += '<img class="singleSubjectPreviewImg" src="'+response.data.image+'" />';
+							output += '<p style="text-align: center; font-weight: bold;">';
+							}else{
+								output += '<p style="text-align: center; font-weight: bold; margin-top: 50px;">';
+							}
+							output += response.data.title+'<br /><a href="#" class="subjectRemove">(remove)</a></p>';
+						now = Math.round((new Date()).getTime() / 1);
+						parent.find('.singleSubjectPreview').html(output).show();
+						parent.find('.singleSubjectInput').hide();
+						parent.find('.singleSubjectField').val(response.data.id);
+						
+						parent.parent().append('<div class="singleSubject"><a class="subjectAdd button" href="#">Add <br />Speaker/Topic</a><div class="singleSubjectInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSubject['+now+']" id="" class="singleSubjectField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="subjectCancelAdd" href="#">Cancel</a></div><div class="singleSubjectPreview" style="display: none;"></div></div>');
+						//alert(response.data);
+					});
+				}
+				
+			});
+			e.preventDefault();
+			//addSuggest();
 		});
 		
-		jQuery('.elemRemove').live('click',function(e){
+		jQuery('.subjectRemove').live('click',function(e){
+			if (confirm("Are you sure you want to remove this speaker/topic? Doing so will unlink any comment blocks you have added. In other words, a pain to fix.")) {
+			      jQuery(this).parent().parent().parent().find('.subjectAdd').show();
+				  jQuery(this).parent().parent().parent().find('.singleSubjectField').val('');
+				  jQuery(this).parent().parent().html('');
 			
 			
-			if(numCol<=8){
-				jQuery('.elemAdd').show();
-			}
+			   }
 			e.preventDefault();
 		});
 		
+		jQuery('.subjectCancelAdd').live('click',function(e){
+			jQuery(this).parent().hide().parent().find('.subjectAdd').show();
+			e.preventDefault();
+		});
+	
+		
 		function addSuggest(){
-			jQuery(".singleColText").suggest(ajaxurl+ "?action=popcornlm-subject-list", { 
+			jQuery(".singleSubjectField").suggest(ajaxurl+ "?action=popcornlm-subject-list", { 
 				delay: 500, 
 				minchars: 2,
 				onSelect: function(){
@@ -509,13 +540,17 @@ jQuery(document).ready(function(){
 						};
 
 					jQuery.getJSON(ajaxurl, data, function(response){
-						alert(response.data);
+						
+						
+						
+						console.log(response);
+						//alert(response.data);
 					});
 
 				}
 				});
 		}
-		addSuggest();
+		
 		
 		jQuery('#vidOutcomeTemplate').live('change',function(){
 			
@@ -537,7 +572,7 @@ jQuery(document).ready(function(){
 				});
 				output += '<div style="clear: both"></div>';
 				jQuery('#templatePreviewColContainer').html(output);
-				console.log(response);
+				
 			});
 		
 		
@@ -567,6 +602,7 @@ jQuery(document).ready(function(){
 	// Use nonce for verification
 	echo '<input type="hidden" name="custom_meta_box_nonce" value="'.wp_create_nonce(basename(__FILE__)).'" />';
 		?>
+		<input type="hidden" id="popcornStep" name="popcornStep" value="1" />
 		<div id="adminPopcornWrapper">
 		<div id="adminPopcorn" ></div>
 		<?php
@@ -586,17 +622,31 @@ jQuery(document).ready(function(){
 		?>
 		</div>
 		
-		<div id="initOptions">
-		<?php $optionsMeta = get_post_meta($post->ID,$this->prefix.'options',true);
-			if(!$optionsMeta){
+		<div id="initOptions" >
+		<?php $optionsMeta = get_post_meta($post->ID,'popcornLMOptions',true);
+			if($optionsMeta){
+				$optionsObject = json_decode($optionsMeta);
+				print_r($optionsObject);
+				$subjects = get_object_vars($optionsObject->subjects);
+				$vidOutcomeTemplate = $optionsObject->vidOutcomeTemplate;
+				if($subjects!=''&&$vidOutcomeTemplate!=''){
+					//everything is set up, proceed as planned.
+				
+				}else{
+					?>
+					<script type="text/javascript">
+					jQuery(document).ready(function(){
+						jQuery('#addVideoLinkBox').html('').hide();
+						jQuery('#initOptions').show();
+					});
+					</script>
+					<?php
+				}
+			}
+
 				?>
 				
-				<script type="text/javascript">
-				jQuery(document).ready(function(){
-					jQuery('#addVideoLinkBox').html('').hide();
-					
-				});
-				</script>
+				
 				
 				
 				<h2>Step 2: Configure</h2>
@@ -612,30 +662,33 @@ jQuery(document).ready(function(){
 					
 					
 					echo '<option value="default" ';
-					if($optionsMeta['outcomeTemplate']=='default'){
+					if($vidOutcomeTemplate=='default'){
 						echo 'selected="selected"';
 					}
-					echo ' rel="';
-					echo '">'.$default['name'].'</option>';
+					
+					echo '>'.$default['name'].'</option>';
 					
 					$outcomeTemplates = new WP_Query(array('post_type'=>'popcornlm_labels','posts_per_page'=>-1));
 			while ( $outcomeTemplates->have_posts() ) : $outcomeTemplates->the_post();
 				
 					
 
-					echo '<option value="'.get_the_ID().'" rel="';
-					echo '">'.get_the_title().'</option>';
+					echo '<option value="'.get_the_ID().'" ';
+					if($vidOutcomeTemplate==get_the_ID()){
+						echo 'selected="selected"';
+					}
+					echo '>'.get_the_title().'</option>';
 					endwhile;
-					$labelMeta = $this->class['labels']->getLabelMeta($optionsMeta['outcomeTemplate']);
+					
 					?>
 		
 				</select>
 				<div id="templatePreview" style="margin: 0 auto; width: 450px; padding: 5px; border-bottom: dotted 1px #666; margin-bottom: 15px;">
 				<?php
-				$labelMeta = $this->class['labels']->getLabelMeta($optionsMeta['outcomeTemplate']);
-				if(!$labelMeta||$optionsMeta['outcomeTemplate']=='default'){
-					echo '<p style="text-align: center;padding-top: 5px; margin-top: 5px;">Template Preview: <span id="templatePreviewName" style="font-weight: bold;">'.$default['name'].'</span></p><div id="templatePreviewColContainer" style="margin: 0 auto;width: 300px;">';
-					foreach($default['colors'] as $name=>$color){
+				$labelMeta = $this->class['labels']->getLabelMeta($vidOutcomeTemplate);
+				if($labelMeta){
+					echo '<p style="text-align: center;padding-top: 5px; margin-top: 5px;">Template Preview: <span id="templatePreviewName" style="font-weight: bold;">'.$labelMeta['name'].'</span></p><div id="templatePreviewColContainer" style="margin: 0 auto;width: 300px;">';
+					foreach($labelMeta['colors'] as $name=>$color){
 						echo '<div class="templatePreviewColInstance"><div class="templatePreviewColName">'.$name.'</div><div class="templatePreviewColSwatch" style="background-color: #'.$color.'; "></div></div>';
 					}
 					echo '<div style="clear: both"></div></div>';
@@ -647,58 +700,34 @@ jQuery(document).ready(function(){
 			
 				
 				?>
-				<div id="colList">
-				<p>Add speakers here, e.g. John Smith, Jane Doe. You could also do topics. Fewer the better, as each gets a column. <em>"Spare the brevity, spoil the layout."</em></p>
-				
-				<a class="elemAdd button" href="#">Add Speaker/Topic</a>
-				<div class="singleCol">
-				<input type="text" name="" id="" class="singleColText" value="" size="10" />	
-				</div>
-						
-				</div>
-				
-				
-				
-				<br /><br /><input class="button-primary" type="submit" name="save" value="Configure" id="initOptionsSubmit">
+				<div id="subjectList" style="margin-top: 10px; padding: 5px;">
+				<p>Add people/topics here, e.g. John Smith, Jane Doe. Fewer the better, as each gets a column. Generally this will be a speaker. <em>"Spare the brevity, spoil the layout."</em><br />You can add people/topics by going to "People/Topics" under "Popcorn Analysis" in the left menu.</p>
 				<?php
-			}else{
-				//there is meta, now we need to see if all the fields are met.
-				$optionsObject = json_decode($optionsMeta);
-				if($optionsObject['colTitles']==''||$optionsObject['vidOutcomeTemplate']==''){
-					?>
-					<script type="text/javascript">
-					jQuery(document).ready(function(){
-						jQuery('#addVideoLinkBox').html('').hide();
-					});
-					</script>
-
-
-					<h2>Step 2: Configure</h2>
-					<p>Choose the number of columns, e.g. speakers or subjects, and the callouts, e.g. True or False.</p>
-					<label for="numCols">Number of Columns: </label>
-					<select name="numCols" id="numCols">
-<?php
-					for($i;$i<=3;$i++){
-						?>
-						<option value="<?php echo $i; ?>" <?php if($optionsObject['numCols']==$i){echo 'selected="selected"';}?>><?php echo $i; ?></option>
-						<?php
+				
+				if($subjects!=''&&is_array($subjects)){
+					foreach($subjects as $id=>$val){
+						
 					}
-?>
-					</select><br /><br />
-					<label for="colTitles">Column Titles (e.g. speakers), comma separated: </label>
-					<input type="text" name="colTitles" id="colTitles" value="" />
-
-
-					<br /><br /><label for="vidOutcomeTemplate">Possible Outcomes: </label>
-
-
-					<br /><br /><input class="button-primary" type="submit" name="save" value="Configure" id="initOptionsSubmit">
-					<?php
-					
 				}
-			}
-
-		 ?>
+				
+				
+				?>
+	
+				<div class="singleSubject">
+				<a class="subjectAdd button" href="#">Add <br />Speaker/Topic</a>
+				<div class="singleSubjectInput" style="display: none;">
+				<small>Type and choose from the list that appears.</small>
+				<input type="text" name="singleSubject[<?php echo time(); ?>]" class="singleSubjectField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="subjectCancelAdd" href="#">Cancel</a></div>
+				<div class="singleSubjectPreview" style="display: none;"></div>
+				</div>
+					
+				</div>
+				<div style="clear: both;"></div>	
+				
+				
+				<br /><br /><input name="original_publish" type="hidden" id="original_publish" value="Publish" />
+						<input type="submit" name="publish" id="publish" class="button-primary" value="Configure" tabindex="5" accesskey="p"  />
+	
 		
 		</div>
 		
@@ -785,49 +814,91 @@ jQuery(document).ready(function(){
 
 
 		if("popcornlm"==$_POST['post_type']){
-
-			$custom_meta_fields = $this->custom_meta_fields;
-			$subFields = $this->subFields;
-			$resource = array();
-			foreach($subFields as $subField){
-				$resource[$subField['id']] = $_POST[$subField['id']];
+			
+			
+			
+			$popcornArray = array();
+			if(isset($_POST[$this->prefix.'youtube'])){
+				$popcornArray[$this->prefix.'youtube'] = $_POST[$this->prefix.'youtube'];
 			}
-
-			$encode = json_encode($resource);
-
-			// loop through fields and save the data
-			foreach ($custom_meta_fields as $field) {
-				//youtube and content blocks are distinct
-
-				if($field['id']==$this->prefix.'linkBlock'){
-
-					$time = $_POST['timeOfPost'];
-
-					$new = $encode;
-
-					$key = $field['id'].'__'.$time;
-
-					$old = get_post_meta($post_id, $key, true);
-
-					if ($new && $new != $old && $time) {
-						update_post_meta($post_id, $key, $new);
-					} elseif ('' == $new && $old) {
-						delete_post_meta($post_id, $key, $old);
-					}
-				}elseif($field['id']==$this->prefix.'optionsBlock'){
-
-				}else{
-					$old = get_post_meta($post_id, $field['id'], true);
-
-					$new = $_POST[$field['id']];
-					if ($new && $new != $old) {
-						update_post_meta($post_id, $field['id'], $new);
-					} elseif ('' == $new && $old) {
-						delete_post_meta($post_id, $field['id'], $old);
+			
+			
+			$optionsArray = array();
+			if(isset($_POST['vidOutcomeTemplate'])){
+				$optionsArray['vidOutcomeTemplate'] = $_POST['vidOutcomeTemplate'];
+			}
+			
+			if(isset($_POST['singleSubject'])&&is_array($_POST['singleSubject'])){
+				
+				foreach($_POST['singleSubject'] as $k=>$v){
+					if($v!=''){
+						//v is the ID
+						$optionsArray['subjects'][$k] = $v;
 					}
 				}
-
-			} // end foreach
+				$popcornArray['popcornLMOptions'] = json_encode($optionsArray);
+			}
+			
+			
+			
+			//more to add, but for now...
+			foreach($popcornArray as $field=>$value){
+				$old = get_post_meta($post_id, $field, true);
+				$new = $value;
+				if($new && $new != $old){
+					update_post_meta($post_id,$field,$new);
+				}elseif(''==$new && $old){
+					delete_post_meta($post_id,$field,$old);
+				}
+	
+			}
+			
+			
+			
+			
+			
+			// $custom_meta_fields = $this->custom_meta_fields;
+			// 		$subFields = $this->subFields;
+			// 		$resource = array();
+			// 		foreach($subFields as $subField){
+			// 			$resource[$subField['id']] = $_POST[$subField['id']];
+			// 		}
+			// 
+			// 		$encode = json_encode($resource);
+			// 
+			// 		// loop through fields and save the data
+			// 		foreach ($custom_meta_fields as $field) {
+			// 			//youtube and content blocks are distinct
+			// 
+			// 			if($field['id']==$this->prefix.'linkBlock'){
+			// 
+			// 				$time = $_POST['timeOfPost'];
+			// 
+			// 				$new = $encode;
+			// 
+			// 				$key = $field['id'].'__'.$time;
+			// 
+			// 				$old = get_post_meta($post_id, $key, true);
+			// 
+			// 				if ($new && $new != $old && $time) {
+			// 					update_post_meta($post_id, $key, $new);
+			// 				} elseif ('' == $new && $old) {
+			// 					delete_post_meta($post_id, $key, $old);
+			// 				}
+			// 			}elseif($field['id']==$this->prefix.'optionsBlock'){
+			// 
+			// 			}else{
+			// 				$old = get_post_meta($post_id, $field['id'], true);
+			// 
+			// 				$new = $_POST[$field['id']];
+			// 				if ($new && $new != $old) {
+			// 					update_post_meta($post_id, $field['id'], $new);
+			// 				} elseif ('' == $new && $old) {
+			// 					delete_post_meta($post_id, $field['id'], $old);
+			// 				}
+			// 			}
+			// 
+			// 		} // end foreach
 
 
 
