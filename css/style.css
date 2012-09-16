@@ -54,3 +54,17 @@
 	width: 50px;
 	background-color: black;
 }
+.templatePreviewColInstance{
+	float: left; 
+	width: 100px;
+}
+.templatePreviewColName{
+	min-height: 50px;  
+	float: left;
+	margin-left: 25px;
+}
+.templatePreviewColSwatch{
+	height: 15px; 
+	width: 20px; 
+	margin-right: 20px;
+}

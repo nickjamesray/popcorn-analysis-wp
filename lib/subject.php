@@ -10,8 +10,8 @@ class PopcornLM_Subject {
 		
 		
 		//ajax queries
-		add_action('wp_ajax_popcornlm-subject-list', array($this, 'ajaxSubjectList'));
-		add_action('wp_ajax_popcornlm-single-subject', array($this, 'ajaxSingleSubject'));
+	//	add_action('wp_ajax_popcornlm-subject-list', array($this, 'ajaxSubjectList'));
+	//	add_action('wp_ajax_popcornlm-single-subject', array($this, 'ajaxSingleSubject'));
 		add_action('add_meta_boxes', array($this,'registerMetaBoxes'));
 		add_action('admin_head',array($this,'subjectJQueryUI'));
 		

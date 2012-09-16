@@ -80,10 +80,11 @@ class PopcornLM {
 		//last we set up this so we can put it under the popcorn list video.
 		$popcornLM_Subject = new PopcornLM_Subject();
 		$popcornLM_Label = new PopcornLM_Label();
+		$popcornLM_Ajax = new PopcornLM_Ajax();
 		
 		$this->class = array(
 			'subjects'=>$popcornLM_Subject,
-			'labels'=>$popcornLM_Label
+			'labels'=>$popcornLM_Label,
 		);
 		return $this->class;
 	}
@@ -517,7 +518,29 @@ jQuery(document).ready(function(){
 		addSuggest();
 		
 		jQuery('#vidOutcomeTemplate').live('change',function(){
-		    alert(jQuery(this).find('option:selected').attr('rel'));
+			
+			
+			var id = jQuery(this).find('option:selected').attr('value');
+			
+			var data = {
+				action: 'popcornlm-template-meta',
+				id: id
+			};
+			
+		    jQuery.getJSON(ajaxurl, data, function(response){
+			
+				//alert(response.data.labelVals[0]);
+				jQuery('#templatePreviewName').html(response.data.name);
+				var output = '';
+				jQuery.each(response.data.labelVals,function(key,val){
+					output += '<div class="templatePreviewColInstance"><div class="templatePreviewColName">'+val.label+'</div><div class="templatePreviewColSwatch" style="background-color: #'+val.col+'; "></div></div>';
+				});
+				output += '<div style="clear: both"></div>';
+				jQuery('#templatePreviewColContainer').html(output);
+				console.log(response);
+			});
+		
+		
 		});
 
 		
@@ -577,14 +600,17 @@ jQuery(document).ready(function(){
 				
 				
 				<h2>Step 2: Configure</h2>
-				<p>Add speakers here, e.g. John Smith, Jane Doe. You could also do topics. Fewer the better, as each gets a column. <em>"Spare the brevity, spoil the layout."</em></p>
+				<p>Choose what labels you will be applying to your analysis, example True/False. These can be created and customized by going to "Label Templates" under "Popcorn Analysis" in the left menu. <strong>Changing this in the future is not recommended, as it will require relabeling your content.</strong></p>
 				
-			<label id="vidOutcomeLabel" for="vidOutcomeTemplate">Outcome Template: </label>
+			<label id="vidOutcomeLabel" style="margin-top: 5px; margin-right: 10px;" for="vidOutcomeTemplate">Outcome Template: </label>
 				
 				<select name="vidOutcomeTemplate" id="vidOutcomeTemplate">
 				
 					<?php
 				 	$default = $this->class['labels']->getDefaultLabel();
+					
+					
+					
 					echo '<option value="default" ';
 					if($optionsMeta['outcomeTemplate']=='default'){
 						echo 'selected="selected"';
@@ -594,22 +620,37 @@ jQuery(document).ready(function(){
 					
 					$outcomeTemplates = new WP_Query(array('post_type'=>'popcornlm_labels','posts_per_page'=>-1));
 			while ( $outcomeTemplates->have_posts() ) : $outcomeTemplates->the_post();
-					$outcomeMeta = get_post_custom();
-
+				
+					
 
 					echo '<option value="'.get_the_ID().'" rel="';
-					
 					echo '">'.get_the_title().'</option>';
-
 					endwhile;
-					
+					$labelMeta = $this->class['labels']->getLabelMeta($optionsMeta['outcomeTemplate']);
 					?>
 		
-				</select><br /><br />
+				</select>
+				<div id="templatePreview" style="margin: 0 auto; width: 450px; padding: 5px; border-bottom: dotted 1px #666; margin-bottom: 15px;">
 				<?php
-				print_r($outcomeMeta);
+				$labelMeta = $this->class['labels']->getLabelMeta($optionsMeta['outcomeTemplate']);
+				if(!$labelMeta||$optionsMeta['outcomeTemplate']=='default'){
+					echo '<p style="text-align: center;padding-top: 5px; margin-top: 5px;">Template Preview: <span id="templatePreviewName" style="font-weight: bold;">'.$default['name'].'</span></p><div id="templatePreviewColContainer" style="margin: 0 auto;width: 300px;">';
+					foreach($default['colors'] as $name=>$color){
+						echo '<div class="templatePreviewColInstance"><div class="templatePreviewColName">'.$name.'</div><div class="templatePreviewColSwatch" style="background-color: #'.$color.'; "></div></div>';
+					}
+					echo '<div style="clear: both"></div></div>';
+				}
 				?>
-				<div id="colList"><a class="elemAdd button" href="#">Add Speaker/Topic</a>
+				</div>
+				
+				<?php
+			
+				
+				?>
+				<div id="colList">
+				<p>Add speakers here, e.g. John Smith, Jane Doe. You could also do topics. Fewer the better, as each gets a column. <em>"Spare the brevity, spoil the layout."</em></p>
+				
+				<a class="elemAdd button" href="#">Add Speaker/Topic</a>
 				<div class="singleCol">
 				<input type="text" name="" id="" class="singleColText" value="" size="10" />	
 				</div>

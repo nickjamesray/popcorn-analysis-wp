@@ -11,6 +11,7 @@ class PopcornLM_Ajax {
 		//ajax queries
 		add_action('wp_ajax_popcornlm-subject-list', array($this, 'SubjectList'));
 		add_action('wp_ajax_popcornlm-single-subject', array($this, 'SingleSubject'));
+		add_action('wp_ajax_popcornlm-template-meta', array($this, 'templateMeta'));
 	}
 	
 	
@@ -42,6 +43,33 @@ class PopcornLM_Ajax {
 		die();
 	}
 	
+	public function templateMeta(){
+		
+		$array = array();
+		if($_GET['id']!=='default'){
+			$templateMeta = get_post_custom($_GET['id']);
+			$array['name'] = get_the_title($_GET['id']);
+			$labelMetaVals = str_replace("\\","",$templateMeta['labelVals'][0]);
+			$array['labelVals'] = json_decode($labelMetaVals);
+		}else{
+		
+			$array['name'] = 'Default True/Uncertain/False';
+			$array['labelVals'][0]['label'] = "True";
+			$array['labelVals'][0]['col'] = "33BB00";
+			$array['labelVals'][1]['label'] = "Uncertain";
+			$array['labelVals'][1]['col'] = "444444";
+			$array['labelVals'][2]['label'] = "False";
+			$array['labelVals'][2]['col'] = "CC1100";
+			
+		}
+		
+		
+		
+		
+		echo json_encode(array('data'=>$array));
+		
+		die();
+	}
 	
 }
 

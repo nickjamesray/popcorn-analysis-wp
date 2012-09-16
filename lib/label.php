@@ -51,6 +51,17 @@ class PopcornLM_Label {
 		return $array;
 	}
 	
+	public function getLabelMeta($template_id=''){
+		$array = array();
+		switch($template_id){
+			case 'default':
+			$array = $this->getDefaultLabel();
+			return $array;
+			break;
+		}
+		return false;
+	}
+	
 	
 	public function init(){
 		$this->registerPostType();
@@ -128,7 +139,7 @@ class PopcornLM_Label {
 			e.preventDefault();
 		});
 		jQuery('.cancelDeleteTemplateEntry').live('click',function(e){
-			jQuery(this).parent().html('<span class="sureDelete"><a href="#" class="deleteTemplateEntry">Delete</a></span>');
+			jQuery(this).parent().html('<a href="#" class="deleteTemplateEntry">Delete</a>');
 			
 			e.preventDefault();
 		});
