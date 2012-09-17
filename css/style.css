@@ -104,3 +104,36 @@
 	display: block;
 	margin: 0 auto;
 }
+.resourceInfo{
+	float: left;
+	margin-right: 30px;
+	min-width: 180px;
+}
+#sourceTable{
+	width: 100%;
+	text-align: center;
+	vertical-align: middle;
+	border-collapse: collapse;
+	
+}
+#sourceTable td{
+	height: 20px;
+	width: 50px;
+	
+}
+#sourceTable th{
+	padding-bottom: 5px;
+}
+#sourceTable tr{
+	border-bottom: solid 1px #ddd;
+}
+#addSourceP{
+	text-align: center;
+	display: block;
+	margin-top: 20px;
+	padding-top: 5px;
+	padding-bottom: 15px;
+}
+.submitResource{
+	font-size: 25px;
+}

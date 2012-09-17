@@ -389,7 +389,7 @@ jQuery(document).ready(function(){
 		
 		
 		jQuery('#youtubeLinkField').hide();
-		jQuery('#youtubeActiveLink').html('<p>Active Link: '+video+'</p><a class="button-secondary" href="#" id="changeVideo" title="Change Video">Change Video</a>');
+		jQuery('#youtubeActiveLink').html('<p>Active Link: '+video+'</p><span class="configLinks"><a  href="#" id="changeVideo" title="Change Video">Change Video</a></span>');
 		
 	
 		
@@ -397,19 +397,24 @@ jQuery(document).ready(function(){
 		alert('YouTube link is not valid. Please double check.');
 	}else{
 		jQuery('#initOptions').html('').hide();
+		jQuery('#addVideoLinkBox').html('').hide();
 	}
 	
 	
 	}
 
 	function changeVideo(){
-		alert('WARNING: You should delete all existing resources before linking to new video.');
-		jQuery('#youtubeActiveLink').hide();
-		jQuery('#youtubeLinkField').show();
-		jQuery('#adminPopcorn').height(0);
-		pop.pause();
-		jQuery('#videoCancel').html('<a href="#" id="cancelChangeVideo">Keep current video</a>');
-		jQuery('#videoSubmit').val('Link to New Video');
+		if(confirm("WARNING: Changing the video source after adding resources will likely cause you a headache. The resources will still work, but the times will probably not match up with a new resource (unless you know what you're doing). Do you still wish to proceed?")){
+			jQuery('#youtubeActiveLink').hide();
+			jQuery('#youtubeLinkField').show();
+			jQuery('#adminPopcorn').height(0);
+			pop.pause();
+			jQuery('.changeConfig').hide();
+			jQuery('#videoCancel').html('<a href="#" id="cancelChangeVideo">Keep current video</a>');
+			jQuery('#videoSubmit').val('Link to New Video');
+		}
+		
+		
 	}
 
 	jQuery('#changeVideo').live('click',function(e){
@@ -422,6 +427,7 @@ jQuery(document).ready(function(){
 		jQuery('#adminPopcorn').height(276);
 		jQuery('#youtubeLinkField').hide();
 		jQuery('#youtubeActiveLink').show();
+		jQuery('.changeConfig').show();
 	});
 
 	function ytVidId(url) {
@@ -474,8 +480,16 @@ jQuery(document).ready(function(){
 			return false;
 		});
 
+
+		jQuery('.changeConfig').live('click',function(e){
+			if(confirm("Warning: Changing these options will likely require relabeling of your data. Are you sure you want to proceed?")){
+				jQuery('#initOptions').show();
+			}
+			e.preventDefault();
+		});
+
 	
-		//this needs changed so there is ONE button that adds, and each one has a delete next to it.
+
 		jQuery('.subjectAdd').live('click',function(e){
 			
 		var parent = jQuery(this).parent();	jQuery(this).hide().parent().find('.singleSubjectInput').show().find('.singleSubjectField').suggest(ajaxurl + '?action=popcornlm-subject-list', {
@@ -578,8 +592,79 @@ jQuery(document).ready(function(){
 		
 		});
 
+		jQuery('.addSource').live('click',function(e){
+			
+			var now = Math.round((new Date()).getTime() / 10);
+			
+			var output = '<tr class="sourceRow"><td><input type="text" class="sourceType" name="sourceType['+now+']" size="12"/></td><td><input type="text" class="sourceName" name="sourceName['+now+']" size="12"/></td><td><input type="text" class="sourceUrl" name="sourceUrl['+now+']" size="12"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>';
+			
+			jQuery('#sourceTable').append(output);
+			e.preventDefault();
+		});
 		
+		jQuery('.removeSource').live('click',function(e){
+			jQuery(this).parent().parent().detach();
+			e.preventDefault();
+		});
 
+		jQuery('.submitResource').live('click',function(e){
+			var time = jQuery('#videoTimeHidden').val();
+			var title = jQuery('#resourceTitle').val();
+			var subject = jQuery('#resourceSubject').val();
+			var label = jQuery('#resourceLabel').val();
+			var text = get_tinymce_content();
+			
+			
+			//sourceRow
+			var sources = {};
+			jQuery('.sourceRow').each(function(index,thisElem){
+				var rowName = jQuery(this).find('.sourceName').attr('name');
+				var sourceId = rowName.split("[")[1].split("]")[0];
+				var name = jQuery(this).find('.sourceName').val();
+				var type = jQuery(this).find('.sourceType').val();
+				var url = jQuery(this).find('.sourceUrl').val();
+				
+					
+				if(name==''&&type==''&&url==''){
+				}else{
+					sources[sourceId] = {};
+					sources[sourceId]['name'] = name;
+					sources[sourceId]['type'] = type;
+					sources[sourceId]['url'] = url;
+				}
+				
+				
+				
+				
+				alert(sourceId);
+			});
+		
+			
+			
+			
+		
+			
+			var data = {
+				time : time,
+				title : title,
+				subject : subject,
+				label : label,
+				text : text,
+				sources : sources
+			};
+			
+			console.log(data);
+			//okay we are ready to make our ajax call!
+			e.preventDefault();
+		});
+		
+			function get_tinymce_content(){
+			    if (jQuery("#wp-popcorninfobody-wrap").hasClass("tmce-active")){
+			        return tinyMCE.activeEditor.getContent();
+			    }else{
+			        return jQuery('#popcorninfobody').val();
+			    }
+			}
 		
 		
 	});
@@ -614,23 +699,33 @@ jQuery(document).ready(function(){
 		
 		
 		
-		
-			echo '<div id="youtubeLinkField" ><label for="'.$this->prefix.'youtube'.'">'.'YouTube Link: '.'</label>
+			
+			echo '<div id="youtubeLinkField" >';
+			echo '<h2>Step 1: Choose a Video</h2>';
+			echo '<label for="'.$this->prefix.'youtube'.'">'.'YouTube Link: '.'</label>
 				<input type="text" name="'.$this->prefix.'youtube'.'" id="'.$this->prefix.'youtube'.'" value="'.$videoMeta.'" size="30" />
 				<br /><span class="description">Paste in the URL for the YouTube video. Example: http://youtube.com/watch?v=SOMEID</span><br /><br /><input class="button-primary" type="submit" name="save" value="Link to Video" id="videoSubmit"><span id="videoCancel"></span></div><div id="youtubeActiveLink"></div>';
 		
 		?>
 		</div>
 		
-		<div id="initOptions" >
+		<div id="initOptions" style="display: none;">
 		<?php $optionsMeta = get_post_meta($post->ID,'popcornLMOptions',true);
 			if($optionsMeta){
 				$optionsObject = json_decode($optionsMeta);
-				print_r($optionsObject);
 				$subjects = get_object_vars($optionsObject->subjects);
 				$vidOutcomeTemplate = $optionsObject->vidOutcomeTemplate;
 				if($subjects!=''&&$vidOutcomeTemplate!=''){
 					//everything is set up, proceed as planned.
+					?>
+					<script type="text/javascript">
+					jQuery(document).ready(function(){
+					//	jQuery('#addVideoLinkBox').html('').hide();
+					//	jQuery('#initOptions').show();
+					jQuery('.configLinks').append(' | <a href="#" class="changeConfig">Change Configuration</a>');
+					});
+						</script>
+					<?php
 				
 				}else{
 					?>
@@ -642,6 +737,27 @@ jQuery(document).ready(function(){
 					</script>
 					<?php
 				}
+			}else{
+				if($videoMeta&&$videoMeta!=''){
+					?>
+					<script type="text/javascript">
+					jQuery(document).ready(function(){
+						jQuery('#addVideoLinkBox').hide();
+						jQuery('#initOptions').show();
+					});
+					</script>
+					<?php
+				}else{
+					?>
+					<script type="text/javascript">
+					jQuery(document).ready(function(){
+						jQuery('#addVideoLinkBox').hide();
+					//	jQuery('#initOptions').show();
+					});
+					</script>
+					<?php
+				}
+					
 			}
 
 				?>
@@ -688,8 +804,10 @@ jQuery(document).ready(function(){
 				$labelMeta = $this->class['labels']->getLabelMeta($vidOutcomeTemplate);
 				if($labelMeta){
 					echo '<p style="text-align: center;padding-top: 5px; margin-top: 5px;">Template Preview: <span id="templatePreviewName" style="font-weight: bold;">'.$labelMeta['name'].'</span></p><div id="templatePreviewColContainer" style="margin: 0 auto;width: 300px;">';
-					foreach($labelMeta['colors'] as $name=>$color){
-						echo '<div class="templatePreviewColInstance"><div class="templatePreviewColName">'.$name.'</div><div class="templatePreviewColSwatch" style="background-color: #'.$color.'; "></div></div>';
+					//print_r($labelMeta);
+					foreach($labelMeta['colors'] as $id=>$colorData){
+						
+						echo '<div class="templatePreviewColInstance"><div class="templatePreviewColName">'.$colorData['label'].'</div><div class="templatePreviewColSwatch" style="background-color: #'.$colorData['col'].'; "></div></div>';
 					}
 					echo '<div style="clear: both"></div></div>';
 				}
@@ -706,7 +824,33 @@ jQuery(document).ready(function(){
 				
 				if($subjects!=''&&is_array($subjects)){
 					foreach($subjects as $id=>$val){
+						?>
+						<div class="singleSubject">
+						<a class="subjectAdd button" style="display: none;" href="#">Add <br />Speaker/Topic</a>
+						<div class="singleSubjectInput" style="display: none;">
+						<small>Type and choose from the list that appears.</small>
+						<input type="text" name="singleSubject[<?php echo $id; ?>]" class="singleSubjectField"  onkeypress="if(event.keyCode==13) return false;" value="<?php echo $val; ?>" size="10" />	<br /><a class="subjectCancelAdd" href="#">Cancel</a></div>
+						<div class="singleSubjectPreview">
+						<?php
+						$subjectTitle = get_the_title($val);
+						$subjectThumb = get_post_meta($val,'subjectThumb',true);
+						if($subjectThumb&&$subjectThumb!=''){
+							$subjectImage = wp_get_attachment_image_src($subjectThumb, 'popcornlm-subject-thumb');
+							$subjectImage = $subjectImage[0];
+							echo '<img class="singleSubjectPreviewImg" src="'.$subjectImage.'" />';
+							echo '<p style="text-align: center; font-weight: bold;">';
+						}else{
+							echo '<p style="text-align: center; font-weight: bold; margin-top: 50px;">';
+						}
+						echo $subjectTitle.'<br /><a href="#" class="subjectRemove">(remove)</a></p>';
+						?>
+	
 						
+						</div>
+						</div>
+
+						
+						<?php
 					}
 				}
 				
@@ -737,22 +881,66 @@ jQuery(document).ready(function(){
 		<input type="hidden" name="timeOfPost" id="timeOfPost" value="<?php echo time();?> "/>
 		
 		<h2>Step 3,4,5...: Add a Video Link</h2>
-		<p>Scrub the player until the time you want shows up below, then fill out the fields and click "Add Video Link."</p>
+		<p>Scrub the player until the time you want shows up below, then fill out the fields and click "Add Video Link." Only label and person/topic are mandatory, but more information is better.</p><br />
+		<div class="resourceInfoContainer">
+		<div class="resourceInfo"><p>Time: <span id="videoTime"></span></p>
+		<p style="margin-top: 21px;">Title: <input type="text" name="resourceTitle" id="resourceTitle" /></p>
+		</div>
+		<div class="resourceInfo"><label for="resourceSubject">Person/Topic: </label>
+		<select name="resourceSubject" id="resourceSubject">
+		<?php
+		if($subjects){
+			foreach($subjects as $k=>$v){
+				$subjectTitle = get_the_title($v);
+				echo '<option value="'.$v.'">'.$subjectTitle.'</option>';
+			}
+		}
+		?>
 		
-		<p>Time: <span id="videoTime"></span></p>
+		</select><br /><br />
+		<label for="resourceLabel">Label: </label>
+		<select name="resourceLabel" id="resourceLabel">
+		<option value="none">None</option>
+		<?php
+		if($labelMeta){
+			foreach($labelMeta['colors'] as $id=>$info){
+				echo '<option value="'.$id.'" style="color: #'.$info['col'].';">'.$info['label'].'</option>';
+			}
+		}
+		?>
+		</select>
+		</div>
+		
+		<div style="clear: both;"></div>
 		
 		
+		<br /><h2>Justification of Label:</h2>
 		<?php
 		$args = array(
 			'textarea_rows'=>4
+		//	'quicktags'=>false
 			
 		);
-		
+	
 		
 		wp_editor('','popcorninfobody',$args);
 		
 	
-		 ?>
+		 ?><br />
+		<h2>Sources:</h2>
+		<p>List type of source (e.g. official document, AP, etc.), title and if possible, URL.</p>
+		<table id="sourceTable">
+		<tr><th>Type (required)</th><th>Name (required)</th><th>URL (optional)</th><th></th></tr>
+		<tr class="sourceRow"><td><input type="text" class="sourceType" name="sourceType[<?php echo time(); ?>]" size="12"/></td><td><input type="text" class="sourceName" name="sourceName[<?php echo time(); ?>]" size="12"/></td><td><input type="text" name="sourceUrl[<?php echo time(); ?>]" class="sourceUrl" size="12"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>
+		</table>
+		
+		<p id="addSourceP"><a class="button addSource" href="#" >Add a Source</a></p><br />
+		<p style="text-align: right;"><a class="button-primary submitResource" href="#" >Submit Record</a></p>
+		
+		</div><!-- end of resourceInfoContainer-->
+		
+		
+		
 		
 		</div>
 		
@@ -841,6 +1029,8 @@ jQuery(document).ready(function(){
 			
 			
 			
+			
+			
 			//more to add, but for now...
 			foreach($popcornArray as $field=>$value){
 				$old = get_post_meta($post_id, $field, true);
@@ -853,54 +1043,6 @@ jQuery(document).ready(function(){
 	
 			}
 			
-			
-			
-			
-			
-			// $custom_meta_fields = $this->custom_meta_fields;
-			// 		$subFields = $this->subFields;
-			// 		$resource = array();
-			// 		foreach($subFields as $subField){
-			// 			$resource[$subField['id']] = $_POST[$subField['id']];
-			// 		}
-			// 
-			// 		$encode = json_encode($resource);
-			// 
-			// 		// loop through fields and save the data
-			// 		foreach ($custom_meta_fields as $field) {
-			// 			//youtube and content blocks are distinct
-			// 
-			// 			if($field['id']==$this->prefix.'linkBlock'){
-			// 
-			// 				$time = $_POST['timeOfPost'];
-			// 
-			// 				$new = $encode;
-			// 
-			// 				$key = $field['id'].'__'.$time;
-			// 
-			// 				$old = get_post_meta($post_id, $key, true);
-			// 
-			// 				if ($new && $new != $old && $time) {
-			// 					update_post_meta($post_id, $key, $new);
-			// 				} elseif ('' == $new && $old) {
-			// 					delete_post_meta($post_id, $key, $old);
-			// 				}
-			// 			}elseif($field['id']==$this->prefix.'optionsBlock'){
-			// 
-			// 			}else{
-			// 				$old = get_post_meta($post_id, $field['id'], true);
-			// 
-			// 				$new = $_POST[$field['id']];
-			// 				if ($new && $new != $old) {
-			// 					update_post_meta($post_id, $field['id'], $new);
-			// 				} elseif ('' == $new && $old) {
-			// 					delete_post_meta($post_id, $field['id'], $old);
-			// 				}
-			// 			}
-			// 
-			// 		} // end foreach
-
-
 
 		}elseif("popcornlm_labels"==$_POST['post_type']){
 

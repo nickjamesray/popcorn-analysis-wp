@@ -40,11 +40,15 @@ class PopcornLM_Label {
 	//returns default config.
 	public function getDefaultLabel(){
 		$array = array(
+			'id'=>'default',
 			'name'=>'Default True/Uncertain/False',
 			'colors'=>array(
-				'True'=>'33BB00',
-				'Uncertain'=>'444444',
-				'False'=>'CC1100'
+				array('label'=>'True',
+				'col'=>'33BB00'),
+				array('label'=>'Uncertain',
+				'col'=>'444444'),
+				array('label'=>'False',
+				'col'=>'CC1100')	
 			)
 		);
 	
@@ -55,7 +59,9 @@ class PopcornLM_Label {
 		$array = array();
 		switch($template_id){
 			case 'default':
+			case '':
 			$array = $this->getDefaultLabel();
+			$array['id'] = $template_id;
 			return $array;
 			break;
 			default:
@@ -66,8 +72,12 @@ class PopcornLM_Label {
 				$labelMetaVals = str_replace("\\","",$custom);
 				$data = json_decode($labelMetaVals);
 				foreach($data as $k=>$val){
-					$array['colors'][$val->label] = $val->col;
+					$array['colors'][$k] = array(
+						'label'=>$val->label,
+						'col'=>$val->col
+					);
 				}
+				$array['id'] = $template_id;
 			}
 			
 			return $array;
