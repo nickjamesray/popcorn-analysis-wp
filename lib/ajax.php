@@ -12,8 +12,66 @@ class PopcornLM_Ajax {
 		add_action('wp_ajax_popcornlm-subject-list', array($this, 'SubjectList'));
 		add_action('wp_ajax_popcornlm-single-subject', array($this, 'SingleSubject'));
 		add_action('wp_ajax_popcornlm-template-meta', array($this, 'templateMeta'));
+		add_action('wp_ajax_popcornlm-create-video-record', array($this,'createVideoRecord'));
 	}
 	
+	
+	public function createVideoRecord(){
+		$array = array();
+		if($_POST['time']!=''&&$_POST['subject']!=''&&$_POST['label']!=''&&$_POST['id']!=''){
+			//we have the essentials, let's add to database.
+			$entry = array();
+			$entry['id'] = $_POST['id'];
+			
+			$entry['time'] = $_POST['time'];
+			$entry['subject'] = esc_attr($_POST['subject']);
+			$entry['label'] = esc_attr($_POST['label']);
+			$entry['title'] = esc_attr($_POST['title']);
+			$entry['text'] = esc_attr($_POST['text']);
+			$entry['sources'] = $_POST['sources'];
+			
+			if(is_numeric($_POST['postId'])){
+				add_post_meta($_POST['postId'],'resourceBlock',$entry);
+			}
+			//to make sure this record now exists, we search for it by id
+			$args = array(
+				'post_type'=>'popcornlm',
+				'meta_query'=>array(
+					array(
+						'key'=>'resourceBlock',
+						'value'=>$_POST['id'],
+						'compare'=>'LIKE'
+					)
+					
+				)
+			);
+			$query = new WP_Query($args);
+			
+			if($query&&$query->found_posts>0){
+				//it was added, now we can return success so jquery can insert that data onto the page where needed.
+				$array['response'] = 'success';
+			}else{
+				//not added for some reason
+				$array['response'] = 'fail';
+			}
+
+		//	$array['response'] = $entry;
+		}else{
+			$array['response'] = 'fail';
+		}
+		echo json_encode($array);
+		die();
+	}
+	
+	public function updateVideoRecord(){
+		
+		die();
+	}
+	
+	public function deleteVideoRecord(){
+		
+		die();
+	}
 	
 	public function SubjectList(){
 		

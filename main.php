@@ -613,8 +613,9 @@ jQuery(document).ready(function(){
 			var subject = jQuery('#resourceSubject').val();
 			var label = jQuery('#resourceLabel').val();
 			var text = get_tinymce_content();
-			
-			
+			var id = jQuery('#timeOfPost').val();
+			var postId = jQuery('#idOfPost').val();
+			alert(postId);
 			//sourceRow
 			var sources = {};
 			jQuery('.sourceRow').each(function(index,thisElem){
@@ -634,9 +635,9 @@ jQuery(document).ready(function(){
 				}
 				
 				
+			
 				
 				
-				alert(sourceId);
 			});
 		
 			
@@ -645,16 +646,32 @@ jQuery(document).ready(function(){
 		
 			
 			var data = {
+				action : 'popcornlm-create-video-record',
 				time : time,
 				title : title,
 				subject : subject,
 				label : label,
 				text : text,
-				sources : sources
+				sources : sources,
+				id : id,
+				postId : postId
 			};
 			
-			console.log(data);
+			
 			//okay we are ready to make our ajax call!
+			
+			jQuery.post(ajaxurl, data, function(response){
+				if(response.response=='success'){
+					//we need to update the time in the box for the next entry.
+					var now = Math.round((new Date()).getTime() / 10);
+					jQuery('#timeOfPost').val(now);
+				}
+				
+				//alert(response.response);
+			//	console.log(response.response);
+			},"json");
+			
+			
 			e.preventDefault();
 		});
 		
@@ -687,7 +704,7 @@ jQuery(document).ready(function(){
 	// Use nonce for verification
 	echo '<input type="hidden" name="custom_meta_box_nonce" value="'.wp_create_nonce(basename(__FILE__)).'" />';
 		?>
-		<input type="hidden" id="popcornStep" name="popcornStep" value="1" />
+		<input type="hidden" name="idOfPost" id="idOfPost" value="<?php echo $post->ID; ?>" />
 		<div id="adminPopcornWrapper">
 		<div id="adminPopcorn" ></div>
 		<?php
@@ -879,6 +896,7 @@ jQuery(document).ready(function(){
 		<input type="hidden" name="videoTime" id="videoTimeHidden" value="0" />
 		
 		<input type="hidden" name="timeOfPost" id="timeOfPost" value="<?php echo time();?> "/>
+	
 		
 		<h2>Step 3,4,5...: Add a Video Link</h2>
 		<p>Scrub the player until the time you want shows up below, then fill out the fields and click "Add Video Link." Only label and person/topic are mandatory, but more information is better.</p><br />
@@ -938,37 +956,99 @@ jQuery(document).ready(function(){
 		<p style="text-align: right;"><a class="button-primary submitResource" href="#" >Submit Record</a></p>
 		
 		</div><!-- end of resourceInfoContainer-->
-		
-		
-		
-		
 		</div>
 		
+		<div id="resourceListContainer">
 		<?php
-		//this will pull all of the resources for this video in JSON format.
-		$linkBlock = get_post_meta($post->ID);
-		
-		
-		
-		if($linkBlock){
-			foreach($linkBlock as $k=>$block){
-				if($k!='_edit_last'&&$k!='_edit_lock'&&$k!='popcornLM_youtube'){
-					$linkBlockTest = explode('__',$k);
-					if($linkBlockTest[0]=='popcornLM_linkBlock'){
-						if(isset($linkBlockTest[1])){
+		$resourceBlocks = get_post_meta($post->ID,'resourceBlock');
+		if($resourceBlocks&&is_array($resourceBlocks)){
+			
+			$sortedBlocks = array();
+			
+			foreach($resourceBlocks as $resourceBlock){
+				//first we need to parse out how many columns. Then the labels for each column. Then organize the resources and post according to time. Sheesh!
+				if($labelMeta&&$subjects){
+					//everything we need to sort and display.
+					//first, by subject
+					foreach($subjects as $id=>$val){
+						if($resourceBlock['subject']==$val){
+							//this array is a match. We need to sort them out now.
 							
-							echo $linkBlockTest[1];
-							
-							
+							//add it to the subjects array, then by time (so we can sort), then by id in case there are two at the same time.
+							$sortedBlocks[$val][$resourceBlock['time']][$resourceBlock['id']] = $resourceBlock;
 						}
+						
+						
+						
+					}
+		
+				}
+				
+			
+			}
+			$columns = count($subjects);
+			//more columns, less space for each. we'll need to set a min-width but not right now.
+			echo '<style>.resourceListColumn{width: '.(97/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; }</style>';
+			
+			foreach($subjects as $id=>$val){
+				//this sorts them by time. They are now separated by name and sorted by time. We can display!
+				ksort($sortedBlocks[$val]);
+				echo '<div class="resourceListColumn">';
+				foreach($sortedBlocks[$val] as $time=>$id){
+					//another foreach in case there are two blocks with the same time
+					foreach($id as $elemID=>$info){
+						//check if our label exists. If not, it is unlabeled (and will need fixed of course!)
+						if(!array_key_exists($info['label'],$labelMeta['colors'])||$info['label']=='none'){
+							$blockLabel = 'Unlabeled';
+						}else{
+							$blockLabel = $labelMeta['colors'][$info['label']]['label'];
+						}
+
+						echo '<div class="resourceListElement elemBlock['.$elemID.']"';
+						if($blockLabel!='Unlabeled'){
+							echo ' style="background-color: #'.$labelMeta['colors'][$info['label']]['col'].';" ';
+						}
+						echo '>';
+						echo '<span class="resourceListElementTime">'.gmdate('H:i:s',$info['time']).' - ';
+						
+						
+						echo '<a href="#" class="displayResourceListElement" style="display: none;">View</a></span>';
+						echo '<div class="resourceInner">';
+						if($info['title']!=''){
+							echo '<p><strong>'.$info['title'].'</strong></p>';
+						}
+						if($info['text']!=''){
+							echo html_entity_decode($info['text']);
+						}
+						print_r($info);
+						print_r($labelMeta);
+						echo '</div>';
+						echo '</div>';
 					}
 					
 					
 				}
 				
+				echo '</div>';
 			}
+			//we need to sort the times so lowest are first.
+			
+		
+		//	print_r($sortedBlocks);
 			
 		}
+		
+		?>
+		<div style="clear: both;"></div>
+		
+		</div>
+		
+		<?php
+		
+		
+		
+		
+	
 		
 		?>
 		

@@ -137,3 +137,24 @@
 .submitResource{
 	font-size: 25px;
 }
+#resourceListContainer{
+	padding-top: 10px;
+	width: 90%;
+	margin: 0 auto;
+}
+
+.resourceListColumn{
+	min-height: 100px;
+	border: solid 1px red;
+	float: left;
+}
+.resourceListElement{
+	padding: 10px;
+}
+.resourceInner{
+	padding: 5px;
+	background-color: white;
+}
+.resourceInner p{
+	margin-top: 5px;
+}
