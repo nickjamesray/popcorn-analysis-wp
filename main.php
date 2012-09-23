@@ -23,6 +23,10 @@ class PopcornLM {
 	
 	public $class;
 	
+	
+	static $add_popcorn;
+	static $popcorn_script;
+	
 	// Field Array
 	public $prefix;
 	public $custom_meta_fields;
@@ -143,9 +147,366 @@ class PopcornLM {
 		
 	}
 	
+	
+	
+	
+	//public fu
+	
 	public function shortcode($atts){
-		echo $atts['id'];
+		//first we need to get that title and meta
+		if(isset($atts['id'])){
+			echo '<link rel="stylesheet" href="'.POPCORNLM_PATH.'css/display.css" />';
+			$id = $atts['id'];
+			echo '<div id="popcornLMDisplayContainer">';
+			echo '<h3>'.get_the_title($id).'</h3>';
+			
+			//now check for a video. if there isn't one, say the video is unavailable and return.
+			$custom = get_post_custom($id);
+			
+			if(isset($custom['popcornLM_youtube'][0])&&$custom['popcornLM_youtube'][0]!=''){
+				?>
+				
+	
+				<div id="popcornLMResourceColumns">
+				<?php
+				if(isset($custom['resourceBlock'])&&is_array($custom['resourceBlock'])&&isset($custom['popcornLMOptions'])&&$custom['popcornLMOptions'][0]!=''){
+					//all configured properly. let's do this thing!
+					echo '<div id="popcornLMVideo"></div>';
+					echo '<div id="popcornLMAlert"><h4>True</h4><p>Barack Obama</p></div>';
+					$sortedTimes = array();
+					$options = json_decode($custom['popcornLMOptions'][0]);
+					$options = get_object_vars($options);
+					
+					
+					$labelMeta = $this->class['labels']->getLabelMeta($options['vidOutcomeTemplate']);
+					$subjects = get_object_vars($options['subjects']);
+					if($labelMeta&&$subjects){
+						$columns = count($subjects);
+						echo '<style>.resourceListDisplayColumn{width: '.(92/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; float: left; padding: '.(2/$columns).'%;  }';
+						foreach($labelMeta['colors'] as $id=>$label){
+							echo '.popcornLMBlockShell-'.$id.'{background-color:#'.$label['col'].';}';
+						}
+						
+						echo '</style>';
+
+						//we have the meta! Let's sort our resources so they code with popcorn properly (e.g. chronological)
+						$columnSort = array();
+						foreach($custom['resourceBlock'] as $resourceBlock){
+							$block = maybe_unserialize($resourceBlock);
+							//we include the id here in case there are duplicate times anywhere.
+							$sortedTimes[$block['time']][$block['id']] = $block['time'];
+							
+							if($block['label']!='none'){
+								$block['labelName'] = $labelMeta['colors'][$block['label']]['label'];
+							}
+							foreach($subjects as $id=>$postId){
+								
+								if($block['subject']==$postId){
+
+									//so we can sort this by time too
+									$columnSort[$postId][$block['time']][$block['id']] = $block;
+									
+						
+								}
+						
+							}
+							
+						}
+							//one big array. now we need to structure our columns.
+						
+							
+							foreach($subjects as $id=>$val){
+								
+								krsort($columnSort[$val]);
+								echo '<div class="resourceListDisplayColumn" id="subject_'.$val.'">';
+								$subjectMeta = get_post_custom($val);
+								$subjectTitle = get_the_title($val);
+								//print_r($subjectMeta);
+								
+									//we want to display photo on the left with name on the right
+									echo '<div class="resourceListDisplayHead">';
+									echo '<div class="resourceListDisplayHeadImage">';
+									if(isset($subjectMeta['subjectThumb'][0])&&$subjectMeta['subjectThumb'][0]!=''){
+										$imageShow = true;
+										$subjectImage = wp_get_attachment_image_src($subjectMeta['subjectThumb'][0], 'popcornlm-subject-thumb');
+										$subjectImage = $subjectImage[0];
+										echo '<img src="'.$subjectImage.'" />';
+									}else{
+										$imageShow = false;
+									}
+									echo '</div>';
+									echo '<div class="popcornLMDisplayHeadText">';
+									echo '<h4 class="popcornLMDisplayHeadTitle"';
+									if($imageShow!=true){
+									//	echo 'style="margin-left: 30%;"';
+									}
+									echo '>'.$subjectTitle.'</h4>';
+									if(isset($subjectMeta['subjectSubhead'][0])&&$subjectMeta['subjectSubhead'][0]!=''){
+										echo '<p class="popcornLMDisplayHeadByline">'.$subjectMeta['subjectSubhead'][0].'</p>';
+										//there will be a popcornsubjectinfo call here with an "info link" to bring a pop up. not yet.
+									}else{
+										//nothing should happen, this just helps us with design.
+									//	echo '<p class="popcornLMDisplayHeadByline">just another dude who wants to be president. but more lines will reaveal</p>'; 
+									
+									}
+									echo '</div>';
+									echo '</div><div style="clear: both;"></div>';
+								
+								
+								foreach($columnSort[$val] as $time=>$blockArray){
+									$zIndex = 1;
+									
+								
+									foreach($blockArray as $id=>$blockInfo){
+											
+									if($blockInfo['title']!=''&&$blockInfo['text']!=''){
+										
+										echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'" style="z-index:'.$zIndex.';">';
+										echo '<div class="popcornLMBlockInner">';
+										echo '<div class="popcornLMBlockTitle">';
+									echo '<h4>'.$blockInfo['title'].'</h4>';
+								
+										echo '<div class="popcornLMBlockLabelLink"><a class="popcornLMBlockExpand" >Expand</a>';
+									
+								
+										if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
+											echo '<p class="popcornLMHiddenLabel">'.$labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
+											echo '<div style="clear: both;"></div>';
+										}else{
+											echo '<div style="clear: both;"></div>';
+										}
+									
+										echo '</div></div>';
+										
+										echo html_entity_decode($blockInfo['text']);
+										
+										if(isset($blockInfo['sources'])&&is_array($blockInfo['sources'])){
+											$sources = count($blockInfo['sources']);
+											if($sources>1){
+												$sourceHead = 'Sources';
+											}else{
+												$sourceHead = 'Source';
+											}
+											
+											
+											echo '<h6>'.$sourceHead.':</h6>';
+											echo '<ul>';
+											foreach($blockInfo['sources'] as $id=>$source){
+												echo '<li>';
+												if($source['url']!=''){
+													echo '<a href="'.$source['url'].'" target="_blank">'.$source['name'].'</a>';
+												}
+												echo '<span class="popcornLMSourceType">'.$source['type'].'</span>';
+												
+												echo '</li>';
+											}
+											echo '</ul>';
+											
+										}
+										
+										
+										echo '</div></div>';
+									}
+									}
+								}
+								echo '</div>';
+							}
+							ksort($sortedTimes);
+
+								
+					}
+				}//ends the top if
+				
+			//	print_r($sortedBlocks);
+			//now we need to write the javascript that makes this run proper.
+			//not optimized!!
+			 $script = '<script type="text/javascript" src="'.POPCORNLM_PATH.'js/popcorn-complete.min.js"></script>';
+			
+			 		$script .= '<script type="text/javascript">';
+				
+			 		$script .= 'jQuery(document).ready(function(){';
+		 			$script .= "
+					//in here we add the data attr for height to each panel
+					var columnWidth = jQuery('.resourceListDisplayColumn:first').width();
+					
+					jQuery('.popcornLMBlockShell').each(function(index){
+					//minus 12 to account for padding.	jQuery(this).css({'position':'absolute','visibility':'hidden','display':'block','width':columnWidth-12});
+						var	subHead = jQuery(this).find('.popcornLMBlockTitle');
+							 title = subHead.outerHeight(true);
+							//title = title+10;
+							shell = jQuery(this).outerHeight(true);
+							jQuery(this).data('fullHeight',shell);
+							jQuery(this).data('titleHeight',title);
+							
+			jQuery(this).css({'position':'static','visibility':'visible','display':'none','width':''});
+					});
+		
+		";
+			 		$script .= 'var pop = Popcorn.youtube("#popcornLMVideo","'.$custom['popcornLM_youtube'][0].'");';
+				//	$script .= 'var pop = Popcorn.vimeo("#popcornLMVideo","http://player.vimeo.com/video/49646272");';	
+					if(count($sortedTimes)>=1){
+						
+						$script .= "
+						jQuery('.resourceListDisplayColumn').each(function(index,v){
+							jQuery(this).find('.popcornLMBlockExpand:last').hide();
+							jQuery(this).find('.popcornLMBlockShell:last').addClass('popcornLMLastBlock');
+						fullHeight = jQuery(this).find('.popcornLMBlockShell:last').data('fullHeight');
+					fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data('titleHeight',fullHeight);
+						});
+					
+						
+						jQuery('.popcornLMBlockExpand').live('click',function(e){
+						var block = jQuery(this).closest('.popcornLMBlockShell');
+						newHeight = block.data('fullHeight');
+						newHeight = newHeight-10;
+						block.animate({'height':newHeight},400);
+						block.addClass('popcornLMHover');
+						jQuery(this).addClass('popcornLMBlockCollapse').removeClass('popcornLMBlockExpand').html('Collapse');
+						e.preventDefault();	
+						});
+						
+						jQuery('.popcornLMBlockCollapse').live('click',function(e){
+							var block = jQuery(this).closest('.popcornLMBlockShell');
+							newHeight = block.data('titleHeight');
+							block.animate({'height':newHeight},400);
+							block.removeClass('popcornLMHover');	
+						jQuery(this).addClass('popcornLMBlockExpand').removeClass('popcornLMBlockCollapse').html('Expand');					e.preventDefault();
+						});
+						
+						
+						
+						function blockTiming(currentTime){
+							jQuery('.popcornLMBlockShell').each(function(index){
+								var blockTime = jQuery(this).attr('rel');
+
+								if(blockTime>currentTime){
+									
+								jQuery(this).removeClass('popcornLMOn');
+								jQuery(this).stop(true,true).animate({'height': 0},400,function(){
+									jQuery(this).hide().height(0);
+								});
+									
+								}else if(blockTime<currentTime){
+									if(!jQuery(this).hasClass('popcornLMOn')){
+										
+							newHeight = jQuery(this).data('titleHeight');
+							
+									jQuery(this).addClass('popcornLMOn');	jQuery(this).stop(true,true).height(0).show().animate({'height': newHeight},400);
+								
+									
+									}
+									
+									
+								
+								}else if(blockTime==currentTime){
+									//here is where we do the alert.
+								}
+							});
+
+						}
+						jQuery('.popcornLMBlockShell').hide();
+						
+						//The function below this runs several times a second, but we only want our code to run once for each second. This ensures that happens.
+						var once = -1;
+						pop.on('timeupdate',function(){
+						
+							
+							//here we round the current time down (because it's given as a decimal) and set it equal to time.
+							var time = Math.floor(this.currentTime());
+
+							//this conditional checks first if time is equal to once (if this second has already run code).
+							if( time!==once){
+
+								//we change the once variable so this won't run more than once a second 
+								once = time;
+
+								// .emit is another Popcorn function, which says run this
+								this.emit('blockUpdate',{
+
+									//when this is run, data will pass to the pop.on below
+									thisTime : time
+									//thats all for now.
+
+								});
+							}
+							//if the user pauses the video, they might scrub back, so we reset 'once' to -1.
+							if(this.paused()){
+								once = -1;
+							}
+							
+						});
+						
+						pop.on('blockUpdate',function(data){
+							blockTiming(data.thisTime);
+						});
+						
+						";
+						
+						
+						
+						
+						
+					// $script .= '
+					// 					pop';
+					// 						foreach($sortedTimes as $key=>$val){
+					// 							foreach($val as $id=>$info){
+					// 								$script .= '.code({
+					// 									start : '.$info['time'].',
+					// 									end : 50,
+					// 									onStart : function(){
+					// 									//	jQuery("#subject_'.$info['subject'].'").prepend("cat");
+					// 									}
+					// 
+					// 								})';
+					// 							}	
+					// 						}
+					// 						$script .= ';';
+						
+					}
+						
+					$script .= '});';
+					
+			 		$script .= '</script>';
+			 		
+							echo $script;
+	
+				?>
+				<div style="clear: both;"></div>
+
+				</div>
+				
+				<?php
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			
+				
+				
+			}else{
+				echo '<p>This video is unavailable. Please check back soon.';
+				return;
+			}
+			
+			
+			
+			
+			echo '</div>';
+		}else{
+			return;
+		}
+		
 	}
+	
+	
+	
+	
+	
 	
 	public function noQuickEdit($actions){
 		if( get_post_type() === 'popcornlm' )
@@ -683,6 +1044,31 @@ jQuery(document).ready(function(){
 			    }
 			}
 		
+		function insertBySort(id,insertData){
+			var insert = insertData;
+			//the values in here need changed but idea is the same.
+			var list = new Array();
+			jQuery('p.textSort').each(function(i,item){
+				list.push(jQuery(this).attr('rel'));
+			});
+			var initLength = list.length;
+			
+			list.push(id);
+		
+			list.sort();
+			
+			var i = jQuery.inArray(4,list);
+			
+			if(i==initLength){
+				jQuery('#testsortbox').append(insert);
+			}else{
+				jQuery(jQuery('#testsortbox').children('.textSort')[i]).before(insert);
+			}
+			
+			
+		}
+		
+	//	insertBySort();
 		
 	});
 
@@ -954,6 +1340,18 @@ jQuery(document).ready(function(){
 		
 		<p id="addSourceP"><a class="button addSource" href="#" >Add a Source</a></p><br />
 		<p style="text-align: right;"><a class="button-primary submitResource" href="#" >Submit Record</a></p>
+		
+		<div id="testsortbox">
+		<?php
+		for($i=1;$i<6;$i++){
+			if($i!=4){
+				echo '<p class="textSort" rel="'.$i.'">'.$i.'</p>';
+			}
+			
+		}
+		
+		?>
+		</div>
 		
 		</div><!-- end of resourceInfoContainer-->
 		</div>

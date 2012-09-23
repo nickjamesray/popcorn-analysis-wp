@@ -1,0 +1,182 @@
+#popcornLMDisplayContainer{
+	margin: 5px auto;
+	width: 99%;
+	
+}
+#popcornLMResourceColumns{
+
+	
+}
+#popcornLMDisplayContainer h3{
+	text-align: center;
+}
+.resourceListDisplayColumn{
+	
+}
+#popcornLMVideo{
+	width: 490px;
+	margin: 0 auto;
+	height: 276px;
+	margin-bottom: 15px;	
+}
+#popcornLMAlert{
+	width: 490px;
+	margin: 0 auto;
+	text-align: center;
+	font-family: Arial, sans-serif;
+}
+#popcornLMAlert h4{
+	font-weight: bold;
+	
+	
+	font-size: 24px;
+	padding-bottom: 2px;
+	margin-bottom: 0;
+}
+#popcornLMAlert p{
+	font-size: 13px;
+	font-style: italic;
+	padding: 0;
+	margin: 0;
+	
+}
+.resourceListDisplayHead{
+	height: 70px;
+	overflow: hidden;
+	max-width: 350px;
+	margin: 0 auto;
+}
+
+.resourceListDisplayHeadImage{
+	width: 20%;
+	min-width: 20%;
+	float: left;
+	margin-left: 8%;
+	margin-right: 5%;
+	min-height: 10px;
+	
+}
+.resourceListDisplayHeadImage img{
+	max-height: 50px;
+	max-width: 100%;
+	padding: 3px;
+	border: solid 1px #999;
+	margin: 2px;
+}
+.popcornLMDisplayHeadText{
+	padding-top: 5px;
+	margin-left: 7%;
+	padding-right: 3%;
+
+}
+.popcornLMDisplayHeadTitle{
+	margin-bottom: 2px;
+	font-size: 15px;
+}
+.popcornLMDisplayHeadByline{
+	font-style: italic;
+	font-size: 13px;
+	line-height: 1.05em;
+}
+.popcornLMBlockShell{
+	padding: 5px 6px 6px 5px;
+	position: relative;
+	overflow: hidden;
+}
+
+
+.popcornLMBlockInner{
+	padding: 10px;
+	background-color: white;
+	font-size: 13px;
+	font-family: Arial, sans-serif;
+	-moz-box-shadow: 3px 3px 4px #000;
+		-webkit-box-shadow: 2px 2px 3px #000;
+		box-shadow: 2px 2px 3px #000;
+		/* For IE 8 */
+		-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+		/* For IE 5.5 - 7 */
+		filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+
+.popcornLMBlockShell-none{
+	border: solid 1px #999;
+	
+}
+.popcornLMBlockShell-none .popcornLMBlockInner{
+	-moz-box-shadow: none;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+		/* For IE 8 */
+		-ms-filter: none;
+		/* For IE 5.5 - 7 */
+		filter: none;
+}
+
+
+.popcornLMBlockLabelLink{
+	min-height: 26px;
+	padding-bottom: 5px;
+}
+
+
+.popcornLMBlockInner h4{
+
+	margin-top: 0px;
+	font-size: 14px;
+	border-bottom: solid 1px #999;
+	margin-bottom: 2px;
+	display: block;
+	
+}
+.popcornLMBlockTitle{
+	display: block;
+	margin-bottom: 5px;
+	
+	
+}
+.popcornLMBlockInner p{
+	margin-top: 0px;
+	padding-top: 0px;
+	margin-bottom: 15px;
+}
+
+.popcornLMBlockInner h6{
+	margin-bottom: 5px;
+}
+.popcornLMBlockInner ul{
+	margin-bottom: 5px;
+}
+
+.popcornLMBlockInner ul li{
+	list-style-type: square;
+	line-height: 1em;
+	font-size: 14px;
+	padding-bottom: 7px;
+}
+.popcornLMBlockInner .popcornLMSourceType{
+	display: block;
+	font-size: 13px;
+	font-style: italic;
+}
+.popcornLMBlockExpand, .popcornLMBlockCollapse{
+	display: block;
+	
+	float: left;
+}
+.popcornLMHiddenLabel{
+	text-align: right;
+	margin-right: 5px;
+	padding-top: 0px;
+	margin-top: 0px;
+	font-weight: bold;
+	font-style: italic;
+	font-size: 16px;
+	color: #666;
+	letter-spacing: .11em;
+	
+	margin-bottom: 0px;
+	display: block;
+
+}

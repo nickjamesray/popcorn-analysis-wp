@@ -78,6 +78,8 @@ class PopcornLM_Label {
 					);
 				}
 				$array['id'] = $template_id;
+			}else{
+				return false;
 			}
 			
 			return $array;
