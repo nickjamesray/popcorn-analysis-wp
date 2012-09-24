@@ -17,21 +17,31 @@
 	width: 490px;
 	margin: 0 auto;
 	height: 276px;
-	margin-bottom: 15px;	
+	margin-bottom: 10px;	
 }
 #popcornLMAlert{
-	width: 490px;
+	min-width: 10px;
 	margin: 0 auto;
 	text-align: center;
 	font-family: Arial, sans-serif;
+	min-height: 60px;
+	margin-bottom: 10px;
 }
+
+#popcornLMAlert > div{
+	display:-moz-inline-stack;
+	display:inline-block;
+	zoom:1;
+	*display:inline;
+}
+
 #popcornLMAlert h4{
 	font-weight: bold;
 	
 	
 	font-size: 24px;
 	padding-bottom: 2px;
-	margin-bottom: 0;
+	margin-bottom: 0px;
 }
 #popcornLMAlert p{
 	font-size: 13px;
@@ -39,6 +49,10 @@
 	padding: 0;
 	margin: 0;
 	
+}
+.popcornLMAlertBox{
+	display: none;
+	padding: 5px 10px;
 }
 .resourceListDisplayHead{
 	height: 70px;
@@ -105,12 +119,13 @@
 	
 }
 .popcornLMBlockShell-none .popcornLMBlockInner{
+	border: solid 1px #ddd;
 	-moz-box-shadow: none;
 		-webkit-box-shadow: none;
 		box-shadow: none;
-		/* For IE 8 */
+
 		-ms-filter: none;
-		/* For IE 5.5 - 7 */
+		
 		filter: none;
 }
 

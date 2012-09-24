@@ -172,7 +172,7 @@ class PopcornLM {
 				if(isset($custom['resourceBlock'])&&is_array($custom['resourceBlock'])&&isset($custom['popcornLMOptions'])&&$custom['popcornLMOptions'][0]!=''){
 					//all configured properly. let's do this thing!
 					echo '<div id="popcornLMVideo"></div>';
-					echo '<div id="popcornLMAlert"><h4>True</h4><p>Barack Obama</p></div>';
+					echo '<div id="popcornLMAlert"></div>';
 					$sortedTimes = array();
 					$options = json_decode($custom['popcornLMOptions'][0]);
 					$options = get_object_vars($options);
@@ -222,7 +222,7 @@ class PopcornLM {
 								$subjectMeta = get_post_custom($val);
 								$subjectTitle = get_the_title($val);
 								//print_r($subjectMeta);
-								
+								echo '<div class="popcornLMAlert"></div>';
 									//we want to display photo on the left with name on the right
 									echo '<div class="resourceListDisplayHead">';
 									echo '<div class="resourceListDisplayHeadImage">';
@@ -261,7 +261,7 @@ class PopcornLM {
 											
 									if($blockInfo['title']!=''&&$blockInfo['text']!=''){
 										
-										echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'" style="z-index:'.$zIndex.';">';
+										echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'_'.trim($blockInfo['id']).'" style="z-index:'.$zIndex.';">';
 										echo '<div class="popcornLMBlockInner">';
 										echo '<div class="popcornLMBlockTitle">';
 									echo '<h4>'.$blockInfo['title'].'</h4>';
@@ -326,6 +326,9 @@ class PopcornLM {
 				
 			 		$script .= 'jQuery(document).ready(function(){';
 		 			$script .= "
+		
+					
+		
 					//in here we add the data attr for height to each panel
 					var columnWidth = jQuery('.resourceListDisplayColumn:first').width();
 					
@@ -337,6 +340,21 @@ class PopcornLM {
 							shell = jQuery(this).outerHeight(true);
 							jQuery(this).data('fullHeight',shell);
 							jQuery(this).data('titleHeight',title);
+							var thisRel = jQuery(this).attr('rel');
+						
+							var relData = thisRel.split('_');
+							jQuery(this).data('blockTime',relData[0]);
+							jQuery(this).data('blockId',relData[1]);
+							jQuery(this).data('alerted','no');
+							var color = jQuery(this).css('background-color');
+							var thisColumn = jQuery(this).closest('.resourceListDisplayColumn');
+							var columnName = thisColumn.find('.popcornLMDisplayHeadTitle').html();
+							
+							var thisLabel = jQuery(this).find('.popcornLMHiddenLabel').html();
+							if(thisLabel!==null){
+								jQuery('#popcornLMAlert').append('<div class=\"popcornLMAlertBox\" id=\"popcornLMAlertBox-'+relData[1]+'\" rel=\"'+relData[1]+'\" style=\"border: solid 3px '+color+'; display: none;\"><h4>'+thisLabel+'</h4><p>'+columnName+'</p></div>');
+							}
+							
 							
 			jQuery(this).css({'position':'static','visibility':'visible','display':'none','width':''});
 					});
@@ -377,29 +395,51 @@ class PopcornLM {
 						
 						function blockTiming(currentTime){
 							jQuery('.popcornLMBlockShell').each(function(index){
-								var blockTime = jQuery(this).attr('rel');
-
+								//data converted our number to a string. change it back so we can do comparison operators!
+								var blockTime = parseInt(jQuery(this).data('blockTime'));
+								
 								if(blockTime>currentTime){
+								
+									//hide alert
+									var blockId = jQuery(this).data('blockId');
+							jQuery('#popcornLMAlertBox-'+blockId).hide();
+								
 									
+									
+									//hasnt happened yet
 								jQuery(this).removeClass('popcornLMOn');
 								jQuery(this).stop(true,true).animate({'height': 0},400,function(){
 									jQuery(this).hide().height(0);
 								});
 									
 								}else if(blockTime<currentTime){
+									
+									if(blockTime+3<currentTime){
+										
+										//hide alert
+										var blockId = jQuery(this).data('blockId');
+										
+								jQuery('#popcornLMAlertBox-'+blockId).hide();
+									}else{
+											//show alert
+			var blockId = jQuery(this).data('blockId');									jQuery('#popcornLMAlertBox-'+blockId).show();
+									}
+									
+									
 									if(!jQuery(this).hasClass('popcornLMOn')){
 										
 							newHeight = jQuery(this).data('titleHeight');
 							
 									jQuery(this).addClass('popcornLMOn');	jQuery(this).stop(true,true).height(0).show().animate({'height': newHeight},400);
-								
+							
 									
 									}
 									
 									
 								
 								}else if(blockTime==currentTime){
-									//here is where we do the alert.
+									
+									
 								}
 							});
 
