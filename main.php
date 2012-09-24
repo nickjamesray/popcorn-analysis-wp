@@ -633,8 +633,8 @@ class PopcornLM {
 					
 					
 					echo '<strong>'.$default['name'].':</strong><br /> <div style="margin: 0 auto; width: 300px; margin-bottom: 10px; margin-top: 10px;">';
-					foreach($default['colors'] as $name=>$color){
-						echo '<div style="float: left; margin-right: 20px; height: 20px;">'.esc_attr($name).': </div><div style="width: 20px; height: 20px; margin-right: 20px; background-color: #'.$color.'; float: left;"></div>';
+					foreach($default['colors'] as $color){
+						echo '<div style="float: left; margin-right: 20px; height: 20px;">'.esc_attr($color['label']).': </div><div style="width: 20px; height: 20px; margin-right: 20px; background-color: #'.$color['col'].'; float: left;"></div>';
 					}
 					?>
 					
