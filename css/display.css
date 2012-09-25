@@ -104,6 +104,7 @@
 	background-color: white;
 	font-size: 13px;
 	font-family: Arial, sans-serif;
+	
 	-moz-box-shadow: 3px 3px 4px #000;
 		-webkit-box-shadow: 2px 2px 3px #000;
 		box-shadow: 2px 2px 3px #000;
@@ -113,6 +114,9 @@
 		filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
 }
 
+.popcornLMBlockInner img{
+	/*max-width: 30%;*/
+}
 
 .popcornLMBlockShell-none{
 	border: solid 1px #999;
@@ -134,7 +138,12 @@
 	min-height: 26px;
 	padding-bottom: 5px;
 }
-
+.popcornLMBlockTime{
+	font-size: 11px;
+	color: black;
+	font-weight: normal;
+	font-style: italic;
+}
 
 .popcornLMBlockInner h4{
 

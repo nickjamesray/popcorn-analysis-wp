@@ -13,12 +13,13 @@ class PopcornLM_Ajax {
 		add_action('wp_ajax_popcornlm-single-subject', array($this, 'SingleSubject'));
 		add_action('wp_ajax_popcornlm-template-meta', array($this, 'templateMeta'));
 		add_action('wp_ajax_popcornlm-create-video-record', array($this,'createVideoRecord'));
+		add_action('wp_ajax_popcornlm-update-video-record', array($this,'updateVideoRecord'));
 	}
 	
 	
 	public function createVideoRecord(){
 		$array = array();
-		if($_POST['time']!=''&&$_POST['subject']!=''&&$_POST['label']!=''&&$_POST['id']!=''){
+		if($_POST['time']!=''&&$_POST['subject']!=''&&$_POST['label']!=''&&$_POST['id']!=''&&$_POST['title']!=''&&$_POST['text']!=''){
 			//we have the essentials, let's add to database.
 			$entry = array();
 			$entry['id'] = $_POST['id'];
@@ -53,20 +54,66 @@ class PopcornLM_Ajax {
 			}else{
 				//not added for some reason
 				$array['response'] = 'fail';
+				
 			}
 
 		//	$array['response'] = $entry;
 		}else{
 			$array['response'] = 'fail';
+			$array['problem'] = 'Not all required fields were entered. Please try again.';
 		}
 		echo json_encode($array);
 		die();
 	}
 	
 	public function updateVideoRecord(){
-		
+		global $wpdb;
+		$array = array();
+		if($_POST['time']!=''&&$_POST['subject']!=''&&$_POST['label']!=''&&$_POST['id']!=''&&$_POST['title']!=''&&$_POST['text']!=''){
+			//we have the essentials, let's find and update to database.
+			$entry = array();
+			$entry['id'] = $_POST['id'];
+
+			$entry['time'] = $_POST['time'];
+			$entry['subject'] = esc_attr($_POST['subject']);
+			$entry['label'] = esc_attr($_POST['label']);
+			$entry['title'] = esc_attr($_POST['title']);
+			$entry['text'] = esc_attr($_POST['text']);
+			$entry['sources'] = $_POST['sources'];
+
+			//now we find to make sure this exists. If for some reason it does not, we can create the record instead.
+			$id = $entry['id'];
+			$existCheck = $wpdb->get_row("SELECT * FROM $wpdb->postmeta WHERE meta_key = 'resourceBlock' AND meta_value LIKE '%$id%'",ARRAY_A);
+			if($existCheck){
+				//it exists, now we just need to update it.
+				$entryData = serialize($entry);
+				if(is_numeric($_POST['postId'])){
+					$postId = $_POST['postId'];
+				$update = $wpdb->query("UPDATE $wpdb->postmeta SET meta_value='$entryData' WHERE post_id=$postId AND meta_key = 'resourceBlock' AND meta_value LIKE '%$id%'");
+				$array['response'] = $update;
+			}
+				
+				
+				//$array['response'] = serialize($entry);
+			}else{
+				//it does not yet exist. Let's go ahead and create it, since we assume that's what they want to do anyway.
+				
+			}
+			
+
+			//$wpdb->update();
+
+		}else{
+			$array['response'] = 'fail';
+	
+			$array['problem'] = 'Not all required fields were entered. Please try again.';
+		}
+		echo json_encode($array);
+
+
 		die();
 	}
+	
 	
 	public function deleteVideoRecord(){
 		

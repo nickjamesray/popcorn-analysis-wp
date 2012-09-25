@@ -15,7 +15,7 @@
 #cancelChangeVideo{
 	padding: 5px 10px;
 }
-#addVideoLinkBox, #initOptions{
+#addVideoLinkBox, #initOptions, #updateVideoLinkBox{
 	
 	margin: 0 auto;
 	width: 480px;
@@ -23,16 +23,16 @@
 	border: dotted 1px #666;
 	margin-top: 15px;
 }
-#addVideoLinkBox h2, #initOptions h2{
+#addVideoLinkBox h2, #initOptions h2,#updateVideoLinkBox h2{
 	line-height: 21px;
 	margin-top: 0px;
 	padding-top: 0px;
 	margin-bottom: 0px;
 }
-#addVideoLinkBox p, #initOptions p{
+#addVideoLinkBox p, #initOptions p,#updateVideoLinkBox p{
 	margin-top: 5px;
 }
-#videoTime{
+.videoTime{
 	color: red;
 }
 .wp-editor-container{
@@ -127,7 +127,7 @@
 #sourceTable tr{
 	border-bottom: solid 1px #ddd;
 }
-#addSourceP{
+#addSourceP,#updateSourceP{
 	text-align: center;
 	display: block;
 	margin-top: 20px;
@@ -145,7 +145,7 @@
 
 .resourceListColumn{
 	min-height: 100px;
-	border: solid 1px red;
+	
 	float: left;
 }
 .resourceListElement{
@@ -158,3 +158,140 @@
 .resourceInner p{
 	margin-top: 5px;
 }
+
+
+
+
+
+
+/*This is like display format.*/
+.popcornLMBlockShell{
+	padding: 5px 6px 6px 5px;
+	position: relative;
+	overflow: hidden;
+}
+
+
+.popcornLMBlockInner{
+	padding: 10px;
+	background-color: white;
+	font-size: 13px;
+	font-family: Arial, sans-serif;
+	-moz-box-shadow: 3px 3px 4px #000;
+		-webkit-box-shadow: 2px 2px 3px #000;
+		box-shadow: 2px 2px 3px #000;
+		/* For IE 8 */
+		-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+		/* For IE 5.5 - 7 */
+		filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+
+.popcornLMBlockShell-none{
+	border: solid 1px #999;
+	background-color: white;
+	
+}
+.popcornLMBlockShell-none .popcornLMBlockInner{
+	border: solid 1px #ddd;
+	-moz-box-shadow: none;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+
+		-ms-filter: none;
+		
+		filter: none;
+}
+
+
+.popcornLMBlockLabelLink{
+	min-height: 26px;
+	padding-bottom: 5px;
+}
+.popcornLMBlockLabelLink a{
+	text-decoration: none;
+}
+.popcornLMBlockTime{
+	font-size: 11px;
+	color: black;
+	font-weight: normal;
+	font-style: italic;
+}
+
+.popcornLMBlockInner h4{
+
+	margin-top: 0px;
+	font-size: 14px;
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+	
+}
+.popcornLMBlockTitleInner{
+	border-bottom: solid 1px #999;
+	margin-bottom: 2px;
+	display: block;
+}
+.popcornLMBlockTitle{
+	display: block;
+	margin-bottom: 5px;
+	
+	
+}
+.popcornLMBlockInner p{
+	margin-top: 0px;
+	padding-top: 0px;
+	margin-bottom: 15px;
+}
+
+.popcornLMBlockInner h6{
+	margin-bottom: 5px;
+	font-size: 13px;
+}
+.popcornLMBlockInner ul{
+	margin-bottom: 5px;
+	margin-left: 25px;
+}
+
+.popcornLMBlockInner ul li{
+	list-style-type: square;
+	line-height: 1em;
+	font-size: 14px;
+	padding-bottom: 7px;
+}
+.popcornLMBlockInner .popcornLMSourceType{
+	display: block;
+	font-size: 13px;
+	font-style: italic;
+}
+.popcornLMBlockExpand, .popcornLMBlockCollapse,.popcornLMBlockEditLinks{
+	display: block;
+	
+	float: left;
+}
+.popcornLMHiddenLabel{
+	text-align: right;
+	margin-right: 5px;
+	padding-top: 0px;
+	margin-top: 0px;
+	font-weight: bold;
+	font-style: italic;
+	font-size: 16px;
+	color: #666;
+	letter-spacing: .11em;
+	
+	margin-bottom: 0px;
+	display: block;
+
+}
+.popcornLMBlockInner img{
+	/*max-width: 80%;*/
+}
+
+#popcornupdateinfobody,#popcorninfobody{
+	height: 300px;
+}
+
+
+
+
+

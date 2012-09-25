@@ -139,6 +139,11 @@ class PopcornLM {
 		
 			add_action('admin_notices', array($this,'my_admin_notice'));
 		
+		if(is_admin()){
+			add_action('init','addPopcornLMThickbox');
+		}
+		
+		
 		
 		add_shortcode('popcornLM', array($this,'shortcode'));
 	
@@ -148,7 +153,11 @@ class PopcornLM {
 	}
 	
 	
-	
+	public function addPopcornLMThickbox(){
+		//Enqueue thickbox - for plugin file
+	//	wp_enqueue_style('thickbox');
+		wp_enqueue_script('thickbox');
+	}
 	
 	//public fu
 	
@@ -246,7 +255,6 @@ class PopcornLM {
 										//there will be a popcornsubjectinfo call here with an "info link" to bring a pop up. not yet.
 									}else{
 										//nothing should happen, this just helps us with design.
-									//	echo '<p class="popcornLMDisplayHeadByline">just another dude who wants to be president. but more lines will reaveal</p>'; 
 									
 									}
 									echo '</div>';
@@ -264,22 +272,27 @@ class PopcornLM {
 										echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'_'.trim($blockInfo['id']).'" style="z-index:'.$zIndex.';">';
 										echo '<div class="popcornLMBlockInner">';
 										echo '<div class="popcornLMBlockTitle">';
-									echo '<h4>'.$blockInfo['title'].'</h4>';
+									echo '<h4>'.$blockInfo['title'].'<br />';
+									echo '<span class="popcornLMBlockTime">'.gmdate('H:i:s',$blockInfo['time']).'</span>';
+									echo'</h4>';
 								
 										echo '<div class="popcornLMBlockLabelLink"><a class="popcornLMBlockExpand" >Expand</a>';
 									
 								
-										if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
-											echo '<p class="popcornLMHiddenLabel">'.$labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
+											if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
+											echo '<p class="popcornLMHiddenLabel">';
+											
+											echo $labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
 											echo '<div style="clear: both;"></div>';
 										}else{
+											
 											echo '<div style="clear: both;"></div>';
 										}
 									
 										echo '</div></div>';
-										
+										echo '<div class="popcornLMBlockBody">';
 										echo html_entity_decode($blockInfo['text']);
-										
+										echo '</div><div style="clear: both;"></div>';
 										if(isset($blockInfo['sources'])&&is_array($blockInfo['sources'])){
 											$sources = count($blockInfo['sources']);
 											if($sources>1){
@@ -324,19 +337,22 @@ class PopcornLM {
 			
 			 		$script .= '<script type="text/javascript">';
 				
-			 		$script .= 'jQuery(document).ready(function(){';
+			 		$script .= 'jQuery(window).load(function(){';
 		 			$script .= "
 		
 					
 		
 					//in here we add the data attr for height to each panel
 					var columnWidth = jQuery('.resourceListDisplayColumn:first').width();
+
 					
 					jQuery('.popcornLMBlockShell').each(function(index){
 					//minus 12 to account for padding.	jQuery(this).css({'position':'absolute','visibility':'hidden','display':'block','width':columnWidth-12});
 						var	subHead = jQuery(this).find('.popcornLMBlockTitle');
 							 title = subHead.outerHeight(true);
 							//title = title+10;
+							//so our images don't overflow.
+							jQuery(this).find('img').css({'max-width':'97%','width':'auto','height':'auto'});
 							shell = jQuery(this).outerHeight(true);
 							jQuery(this).data('fullHeight',shell);
 							jQuery(this).data('titleHeight',title);
@@ -353,6 +369,7 @@ class PopcornLM {
 							var thisLabel = jQuery(this).find('.popcornLMHiddenLabel').html();
 							if(thisLabel!==null){
 								jQuery('#popcornLMAlert').append('<div class=\"popcornLMAlertBox\" id=\"popcornLMAlertBox-'+relData[1]+'\" rel=\"'+relData[1]+'\" style=\"border: solid 3px '+color+'; display: none;\"><h4>'+thisLabel+'</h4><p>'+columnName+'</p></div>');
+								
 							}
 							
 							
@@ -369,7 +386,8 @@ class PopcornLM {
 							jQuery(this).find('.popcornLMBlockExpand:last').hide();
 							jQuery(this).find('.popcornLMBlockShell:last').addClass('popcornLMLastBlock');
 						fullHeight = jQuery(this).find('.popcornLMBlockShell:last').data('fullHeight');
-					fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data('titleHeight',fullHeight);
+					fullHeight = fullHeight-10;	
+					jQuery(this).find('.popcornLMBlockShell:last').data('titleHeight',fullHeight);
 						});
 					
 						
@@ -601,11 +619,15 @@ class PopcornLM {
 				
 				?>
 				<div style="margin: 0 auto; margin-top: 30px; margin-bottom: 40px; border: dotted 1px #666; width: 80%;">
-			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Popcorn Analysis.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where it is relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. </p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
+			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Popcorn Analysis.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where it is relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. <a href="#" id="fullCreditList">View Full Credits.</a></p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
 			<p id="popcornLMInstructionBlock">there.</p>
 			
 		
 			<script type="text/javascript">
+			jQuery("#fullCreditList").live('click',function(e){
+				alert('Info panel concept influenced by Land of Opportunity, Luisa Dantas.\n\nOther open-source software used includes jscolor.js.');
+			e.preventDefault();	
+			});
 			
 			jQuery(".popcornLMInstructionLink").live('click',function(e){
 				jQuery("#popcornLMInstructionBlock").show();
@@ -769,6 +791,83 @@ class PopcornLM {
 
 jQuery(document).ready(function(){
 	
+	
+	jQuery('.popcornLMBlockExpand').live('click',function(e){
+	var block = jQuery(this).closest('.popcornLMBlockShell');
+	newHeight = block.data('fullHeight');
+	newHeight = newHeight-10;
+	block.animate({'height':newHeight},400);
+	block.addClass('popcornLMHover');
+	jQuery(this).addClass('popcornLMBlockCollapse').removeClass('popcornLMBlockExpand').html('Collapse');
+	e.preventDefault();	
+	});
+	
+	jQuery('.popcornLMBlockCollapse').live('click',function(e){
+		var block = jQuery(this).closest('.popcornLMBlockShell');
+		newHeight = block.data('titleHeight');
+		block.animate({'height':newHeight},400);
+		block.removeClass('popcornLMHover');	
+	jQuery(this).addClass('popcornLMBlockExpand').removeClass('popcornLMBlockCollapse').html('Expand');					e.preventDefault();
+	});
+	
+	jQuery(window).load(function(){
+		
+	
+	
+	//in here we add the data attr for height to each panel
+	var columnWidth = jQuery('.resourceListDisplayColumn:first').width();
+	
+	
+	jQuery('.resourceListDisplayColumn').each(function(index,v){
+		jQuery(this).find('.popcornLMBlockExpandText:last').hide();
+		jQuery(this).find('.popcornLMBlockShell:last').addClass('popcornLMLastBlock');
+	fullHeight = jQuery(this).find('.popcornLMBlockShell:last').data('fullHeight');
+fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data('titleHeight',fullHeight);
+	});
+	
+	jQuery('.popcornLMBlockShell').each(function(index){
+	//minus 12 to account for padding.	jQuery(this).css({'position':'absolute','visibility':'hidden','display':'block','width':columnWidth-12});
+		var	subHead = jQuery(this).find('.popcornLMBlockTitle');
+			 title = subHead.outerHeight(true);
+			//title = title+10;
+			//so our images don't overflow.
+			jQuery(this).find('img').css({'max-width':'97%','width':'auto','height':'auto'});
+			shell = jQuery(this).outerHeight(true);
+			jQuery(this).data('fullHeight',shell);
+			jQuery(this).data('titleHeight',title);
+			var thisRel = jQuery(this).attr('rel');
+		
+			var relData = thisRel.split('_');
+			jQuery(this).data('blockTime',relData[0]);
+			jQuery(this).data('blockId',relData[1]);
+			jQuery(this).data('subjectId',relData[2]);
+			jQuery(this).data('labelId',relData[3]);
+			if(jQuery(this).hasClass('popcornLMLastBlock')){
+				newHeight = jQuery(this).data('fullHeight')-10;
+			}else{
+				newHeight = jQuery(this).data('titleHeight');
+			}
+			
+				
+				
+			jQuery(this).addClass('popcornLMOn');	
+			jQuery(this).stop(true,true).height(0).show().animate({'height': newHeight},400);
+			
+			
+			
+			
+			
+	});
+	
+	
+	});
+	
+	
+	
+	
+	
+	
+	
 	if(jQuery('#<?php echo $this->prefix.'youtube'?>').length!==0){
 	var video = jQuery('#<?php echo $this->prefix.'youtube'?>').val();
 	if((video!=='')&&(ytVidId(video)!=0)){
@@ -783,8 +882,9 @@ jQuery(document).ready(function(){
 			});
 
 			pop.on("timeChange",function(data){
-				jQuery('#videoTime').html(secondsToMinutesHours(data.time));
+				jQuery('.videoTime').html(secondsToMinutesHours(data.time));
 				jQuery('#videoTimeHidden').val(data.time);
+				jQuery('#updateVideoTimeHidden').val(data.time);
 			});
 		
 		
@@ -966,6 +1066,63 @@ jQuery(document).ready(function(){
 				});
 		}
 		
+			function addSourceRow(name,sourceType,sourceName,sourceUrl){
+				if (typeof sourceType === "undefined" || sourceType===null) sourceType = '';
+				if (typeof sourceName === "undefined" || sourceName===null) sourceName = '';
+				if (typeof sourceUrl === "undefined" || sourceUrl===null) sourceUrl = '';
+				
+				var now = Math.round((new Date()).getTime() / 10);
+				var output = '<tr class="'+name+'Row"><td><input type="text" class="'+name+'Type" name="'+name+'Type['+now+']" size="12" value="'+sourceType+'"/></td><td><input type="text" class="'+name+'Name" name="'+name+'Name['+now+']" size="12" value="'+sourceName+'"/></td><td><input type="text" class="'+name+'Url" name="'+name+'Url['+now+']" size="12" value="'+sourceUrl+'"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>';
+				return output;
+			}
+		
+		
+		
+		jQuery('.popcornLMBlockEdit').live('click',function(e){
+			//e.preventDefault();
+			jQuery('#updateVideoLinkBox').show();
+			jQuery('#addVideoLinkBox').slideUp('slow');
+			
+			var content = jQuery(this).closest('.popcornLMBlockShell').find('.popcornLMContentArea').html();
+			if (jQuery("#wp-popcorninfobody-wrap").hasClass("tmce-active")){
+				//popcornupdateinfobody is the ID
+				tinyMCE.editors.popcornupdateinfobody.setContent(content);
+		       
+		    }else{
+		        jQuery('#popcornupdateinfobody').val(content);
+		    }
+			var sources = jQuery(this).closest('.popcornLMBlockInner').find('.popcornLMSourceList li');
+			sourceOutput = '';
+			sources.each(function(index){
+				var sourceType = jQuery(this).find('.popcornLMSourceType').html();
+				var sourceUrl = jQuery(this).find('.popcornLMSourceLink').attr('href');
+				var sourceName = jQuery(this).find('.popcornLMSourceLink').html();
+				sourceOutput += addSourceRow('updateSource',sourceType,sourceName,sourceUrl);
+			});
+			//will change to updateSourceTable
+			jQuery('#updateSourceTable').html(sourceOutput);
+			var title = jQuery(this).closest('.popcornLMBlockInner').find('.popcornLMBlockTitle h4').html();
+			jQuery('#updateResourceTitle').val(title);
+			var subject = jQuery(this).closest('.popcornLMBlockShell').data('subjectId');
+			jQuery('#updateResourceSubject').val(subject);
+			var label = jQuery(this).closest('.popcornLMBlockShell').data('labelId');
+			jQuery('#updateResourceLabel').val(label);
+			var time = jQuery(this).closest('.popcornLMBlockShell').data('blockTime');
+			//we need to update value, the text, and move the playhead to that time. we will also need to save the old value for returning.
+			//#videoTimeHidden is normal, we will need one for update
+			var readTime = secondsToMinutesHours(time);
+			jQuery('#videoTimeHidden').data('oldTime',time);
+			var id = jQuery(this).closest('.popcornLMBlockShell').data('blockId')
+			jQuery('#updateVideoId').val(id);
+			//now we update popcorn, which will filter the other events down.
+			if(pop){
+				pop.currentTime(time);
+			}
+		
+		});
+		
+		
+		
 		
 		jQuery('#vidOutcomeTemplate').live('change',function(){
 			
@@ -992,14 +1149,27 @@ jQuery(document).ready(function(){
 		
 		
 		});
+		
+		
+		
 
 		jQuery('.addSource').live('click',function(e){
 			
-			var now = Math.round((new Date()).getTime() / 10);
 			
-			var output = '<tr class="sourceRow"><td><input type="text" class="sourceType" name="sourceType['+now+']" size="12"/></td><td><input type="text" class="sourceName" name="sourceName['+now+']" size="12"/></td><td><input type="text" class="sourceUrl" name="sourceUrl['+now+']" size="12"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>';
-			
+			//names the name for update
+			var output = addSourceRow('source');
 			jQuery('#sourceTable').append(output);
+			e.preventDefault();
+		});
+		//update source is for the update, not a new one.
+		
+	
+		
+		jQuery('.addUpdateSource').live('click',function(e){
+			
+			//names the name for update
+			var output = addSourceRow('updateSource');
+			jQuery('#updateSourceTable').append(output);
 			e.preventDefault();
 		});
 		
@@ -1016,7 +1186,7 @@ jQuery(document).ready(function(){
 			var text = get_tinymce_content();
 			var id = jQuery('#timeOfPost').val();
 			var postId = jQuery('#idOfPost').val();
-			alert(postId);
+			//alert(postId);
 			//sourceRow
 			var sources = {};
 			jQuery('.sourceRow').each(function(index,thisElem){
@@ -1066,6 +1236,89 @@ jQuery(document).ready(function(){
 					//we need to update the time in the box for the next entry.
 					var now = Math.round((new Date()).getTime() / 10);
 					jQuery('#timeOfPost').val(now);
+					alert('Your entry has been added!');
+				}else{
+					alert(response.problem);
+				}
+				
+				//alert(response.response);
+			//	console.log(response.response);
+			},"json");
+			
+			
+			e.preventDefault();
+		});
+		
+		
+		jQuery('.updateResource').live('click',function(e){
+			var time = jQuery('#updateVideoTimeHidden').val();
+			var title = jQuery('#updateResourceTitle').val();
+			var subject = jQuery('#updateResourceSubject').val();
+			var label = jQuery('#updateResourceLabel').val();
+			if (jQuery("#wp-popcorninfobody-wrap").hasClass("tmce-active")){
+				//popcornupdateinfobody is the ID
+			var text =	tinyMCE.editors.popcornupdateinfobody.getContent();
+		       
+		    }else{
+		      var text =  jQuery('#popcornupdateinfobody').val();
+		    }
+			
+			var id = jQuery('#updateVideoId').val();
+			var postId = jQuery('#idOfPost').val();
+			
+			//sourceRow
+			var sources = {};
+			jQuery('.updateSourceRow').each(function(index,thisElem){
+				var rowName = jQuery(this).find('.updateSourceName').attr('name');
+				var sourceId = rowName.split("[")[1].split("]")[0];
+				var name = jQuery(this).find('.updateSourceName').val();
+				var type = jQuery(this).find('.updateSourceType').val();
+				var url = jQuery(this).find('.updateSourceUrl').val();
+				
+					
+				if(name==''&&type==''&&url==''){
+				}else{
+					sources[sourceId] = {};
+					sources[sourceId]['name'] = name;
+					sources[sourceId]['type'] = type;
+					sources[sourceId]['url'] = url;
+				}
+				
+				
+			
+				
+				
+			});
+		
+			
+			
+			
+		
+			
+			var data = {
+				action : 'popcornlm-update-video-record',
+				time : time,
+				title : title,
+				subject : subject,
+				label : label,
+				text : text,
+				sources : sources,
+				id : id,
+				postId : postId
+			};
+			
+			
+			//okay we are ready to make our ajax call!
+			
+			jQuery.post(ajaxurl, data, function(response){
+				alert(response.response);
+				if(response.response=='success'){
+					//we need to update the time in the box for the next entry.
+				//	var now = Math.round((new Date()).getTime() / 10);
+				//	jQuery('#timeOfPost').val(now);
+				//	alert('Your entry has been added!');
+				}else{
+				//	alert(response.problem);
 				}
 				
 				//alert(response.response);
@@ -1318,6 +1571,73 @@ jQuery(document).ready(function(){
 		
 		</div>
 		
+		<div id="updateVideoLinkBox" style="display: none;">
+		<input type="hidden" name="updateVideoTime" id="updateVideoTimeHidden" value="0" />
+		
+		<input type="hidden" name="updateVideoId" id="updateVideoId" value=""/>
+	
+		
+		<h2>Update Video Link</h2>
+		<p>Update the fields and click "Update Video Link." All but sources are mandatory, but at least one source should be included for credibility.</p><br />
+		<div class="resourceInfoContainer">
+		<div class="resourceInfo"><p>Time: <span class="videoTime"></span></p>
+		<p style="margin-top: 21px;">Title: <input type="text" name="updateResourceTitle" id="updateResourceTitle" /></p>
+		</div>
+		<div class="resourceInfo"><label for="updateResourceSubject">Person/Topic: </label>
+		<select name="updateResourceSubject" id="updateResourceSubject">
+		<?php
+		if($subjects){
+			foreach($subjects as $k=>$v){
+				$subjectTitle = get_the_title($v);
+				echo '<option value="'.$v.'">'.$subjectTitle.'</option>';
+			}
+		}
+		?>
+		
+		</select><br /><br />
+		<label for="updateResourceLabel">Label: </label>
+		<select name="updateResourceLabel" id="updateResourceLabel">
+		<option value="none">None</option>
+		<?php
+		if($labelMeta){
+			foreach($labelMeta['colors'] as $id=>$info){
+				echo '<option value="'.$id.'" style="color: #'.$info['col'].';">'.$info['label'].'</option>';
+			}
+		}
+		?>
+		</select>
+		</div>
+		
+		<div style="clear: both;"></div>
+		
+		
+		<br /><h2>Justification of Label:</h2>
+		<?php
+		$args = array(
+			'textarea_rows'=>6
+		//	'quicktags'=>false
+			
+		);
+	
+		
+		wp_editor('','popcornupdateinfobody',$args);
+		
+	
+		 ?><br />
+		<h2>Sources:</h2>
+		<p>List type of source (e.g. official document, AP, etc.), title and if possible, URL.</p>
+		<table id="updateSourceTable">
+	
+		</table>
+		
+		<p id="updateSourceP"><a class="button addUpdateSource" href="#" >Add a Source</a></p><br />
+		<p style="text-align: right;"><a class="button-primary updateResource" href="#" >Update Record</a></p>
+		
+		
+		</div><!-- end of resourceInfoContainer-->
+		</div>
+		
+		
 		<div id="addVideoLinkBox">
 		<input type="hidden" name="videoTime" id="videoTimeHidden" value="0" />
 		
@@ -1325,9 +1645,9 @@ jQuery(document).ready(function(){
 	
 		
 		<h2>Step 3,4,5...: Add a Video Link</h2>
-		<p>Scrub the player until the time you want shows up below, then fill out the fields and click "Add Video Link." Only label and person/topic are mandatory, but more information is better.</p><br />
+		<p>Scrub the player until the time you want shows up below, then fill out the fields and click "Add Video Link." All but sources are mandatory, but at least one source should be included for credibility.</p><br />
 		<div class="resourceInfoContainer">
-		<div class="resourceInfo"><p>Time: <span id="videoTime"></span></p>
+		<div class="resourceInfo"><p>Time: <span class="videoTime"></span></p>
 		<p style="margin-top: 21px;">Title: <input type="text" name="resourceTitle" id="resourceTitle" /></p>
 		</div>
 		<div class="resourceInfo"><label for="resourceSubject">Person/Topic: </label>
@@ -1381,17 +1701,6 @@ jQuery(document).ready(function(){
 		<p id="addSourceP"><a class="button addSource" href="#" >Add a Source</a></p><br />
 		<p style="text-align: right;"><a class="button-primary submitResource" href="#" >Submit Record</a></p>
 		
-		<div id="testsortbox">
-		<?php
-		for($i=1;$i<6;$i++){
-			if($i!=4){
-				echo '<p class="textSort" rel="'.$i.'">'.$i.'</p>';
-			}
-			
-		}
-		
-		?>
-		</div>
 		
 		</div><!-- end of resourceInfoContainer-->
 		</div>
@@ -1426,53 +1735,97 @@ jQuery(document).ready(function(){
 			}
 			$columns = count($subjects);
 			//more columns, less space for each. we'll need to set a min-width but not right now.
-			echo '<style>.resourceListColumn{width: '.(97/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; }</style>';
+		//	echo '<style>.resourceListColumn{width: '.(97/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; }</style>';
 			
-			foreach($subjects as $id=>$val){
-				//this sorts them by time. They are now separated by name and sorted by time. We can display!
-				ksort($sortedBlocks[$val]);
-				echo '<div class="resourceListColumn">';
-				foreach($sortedBlocks[$val] as $time=>$id){
-					//another foreach in case there are two blocks with the same time
-					foreach($id as $elemID=>$info){
-						//check if our label exists. If not, it is unlabeled (and will need fixed of course!)
-						if(!array_key_exists($info['label'],$labelMeta['colors'])||$info['label']=='none'){
-							$blockLabel = 'Unlabeled';
-						}else{
-							$blockLabel = $labelMeta['colors'][$info['label']]['label'];
+			
+			
+				$columns = count($subjects);
+				echo '<style>.resourceListDisplayColumn{width: '.(92/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; float: left; padding: '.(2/$columns).'%;  }';
+				foreach($labelMeta['colors'] as $id=>$label){
+					echo '.popcornLMBlockShell-'.$id.'{background-color:#'.$label['col'].';}';
+				}
+				echo '</style>';
+			
+			
+				foreach($subjects as $id=>$val){
+					//this sorts them by time. They are now separated by name and sorted by time. We can display!
+					krsort($sortedBlocks[$val]);
+					echo '<div class="resourceListDisplayColumn">';
+					foreach($sortedBlocks[$val] as $time=>$id){
+						//another foreach in case there are two blocks with the same time
+						foreach($id as $blockId=>$blockInfo){
+							if($blockInfo['title']!=''&&$blockInfo['text']!=''){
+
+								echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'_'.trim($blockInfo['id']).'_'.$blockInfo['subject'].'_'.$blockInfo['label'].'">';
+								echo '<div class="popcornLMBlockInner">';
+								echo '<div class="popcornLMBlockTitle">';
+								echo '<div class="popcornLMBlockTitleInner">';
+								echo '<h4>'.$blockInfo['title'].'</h4>';
+								echo '<span class="popcornLMBlockTime" rel="'.$blockInfo['time'].'">'.gmdate('H:i:s',$blockInfo['time']).'</span></div>';
+
+								echo '<div class="popcornLMBlockLabelLink"><div class="popcornLMBlockEditLinks"><span class="popcornLMBlockExpandText"><a class="popcornLMBlockExpand" href="#" style="margin-right: 5px;">Expand</a>';
+								echo ' - </span><a class="popcornLMBlockEdit" href="#updateVideoLinkBox">Edit</a> - ';
+								echo '<a class="popcornLMBlockDelete" href="#">Delete</a></div>';
+
+
+								if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
+									echo '<p class="popcornLMHiddenLabel">';
+
+									echo $labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
+									echo '<div style="clear: both;"></div>';
+								}else{
+									echo '<p class="popcornLMHiddenLabel">Unlabeled</p>';
+									echo '<div style="clear: both;"></div>';
+								}
+
+								echo '</div></div><div class="popcornLMContentArea">';
+								
+								echo html_entity_decode($blockInfo['text']);
+								echo '</div>';
+								if(isset($blockInfo['sources'])&&is_array($blockInfo['sources'])){
+									$sources = count($blockInfo['sources']);
+									if($sources>1){
+										$sourceHead = 'Sources';
+									}else{
+										$sourceHead = 'Source';
+									}
+
+
+									echo '<h6>'.$sourceHead.':</h6>';
+									echo '<ul class="popcornLMSourceList">';
+									foreach($blockInfo['sources'] as $id=>$source){
+										echo '<li>';
+										if($source['url']!=''){
+											echo '<a href="'.$source['url'].'" class="popcornLMSourceLink" target="_blank">'.$source['name'].'</a>';
+										}
+										echo '<span class="popcornLMSourceType">'.$source['type'].'</span>';
+
+										echo '</li>';
+									}
+									echo '</ul>';
+
+								}
+
+
+								echo '</div></div>';
+							}	else{
+									//this would happen if there were no title or text. shouldn't happen.
+									//echo 'wompsticks';
+								}
+
 						}
 
-						echo '<div class="resourceListElement elemBlock['.$elemID.']"';
-						if($blockLabel!='Unlabeled'){
-							echo ' style="background-color: #'.$labelMeta['colors'][$info['label']]['col'].';" ';
-						}
-						echo '>';
-						echo '<span class="resourceListElementTime">'.gmdate('H:i:s',$info['time']).' - ';
-						
-						
-						echo '<a href="#" class="displayResourceListElement" style="display: none;">View</a></span>';
-						echo '<div class="resourceInner">';
-						if($info['title']!=''){
-							echo '<p><strong>'.$info['title'].'</strong></p>';
-						}
-						if($info['text']!=''){
-							echo html_entity_decode($info['text']);
-						}
-						print_r($info);
-						print_r($labelMeta);
-						echo '</div>';
-						echo '</div>';
+
 					}
-					
-					
+
+					echo '</div>';
 				}
-				
-				echo '</div>';
-			}
+			
+			
 			//we need to sort the times so lowest are first.
 			
 		
-		//	print_r($sortedBlocks);
+			//print_r($sortedBlocks);
 			
 		}
 		
