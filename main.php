@@ -13,6 +13,8 @@ define('POPCORNLM_BASENAME',basename(__FILE__));
 
 require_once(dirname(__FILE__).'/lib/subject.php');
 require_once(dirname(__FILE__).'/lib/label.php');
+require_once(dirname(__FILE__).'/lib/source.php');
+
 require_once(dirname(__FILE__).'/lib/display.php');
 require_once(dirname(__FILE__).'/lib/ajax.php');
 
@@ -83,12 +85,15 @@ class PopcornLM {
 	public function setClasses(){
 		//last we set up this so we can put it under the popcorn list video.
 		$popcornLM_Subject = new PopcornLM_Subject();
+		$popcornLM_Source = new PopcornLM_Source();
 		$popcornLM_Label = new PopcornLM_Label();
 		$popcornLM_Ajax = new PopcornLM_Ajax();
+		
 		
 		$this->class = array(
 			'subjects'=>$popcornLM_Subject,
 			'labels'=>$popcornLM_Label,
+			'sources'=>$popcornLM_Source
 		);
 		return $this->class;
 	}
@@ -673,7 +678,15 @@ class PopcornLM {
 				
 				</div>
 				<?php
-			}
+			}elseif($screen->id == 'edit-popcornlm_sources'){
+					?>
+					<div style="margin: 0 auto; margin-top: 30px; margin-bottom: 40px; border: dotted 1px #666; width: 80%; text-align: center;">
+					<h2>About Sources</h2>
+					<p style=" padding: 10px 80px;">They boost credibility to your assessments. By putting them here, we can reuse sources in multiple videos that deal with related topics.</p>
+
+					</div>
+					<?php
+				}
 
 		    
 		}
@@ -1027,6 +1040,46 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			//addSuggest();
 		});
 		
+		
+			jQuery('.sourceAdd').live('click',function(e){
+
+			var parent = jQuery(this).parent();	jQuery(this).hide().parent().find('.singleSubjectInput').show().find('.singleSourceField').suggest(ajaxurl + '?action=popcornlm-subject-list', {
+					delay: 500,
+					minchars: 2,
+					onSelect: function(){
+						var data = {
+							action: 'popcornlm-single-subject',
+							subject : this.value
+							};
+
+						jQuery.getJSON(ajaxurl, data, function(response){
+
+							var output = '';
+							if(response.data.image!==undefined){
+								output += '<img class="singleSubjectPreviewImg" src="'+response.data.image+'" />';
+								output += '<p style="text-align: center; font-weight: bold;">';
+								}else{
+									output += '<p style="text-align: center; font-weight: bold; margin-top: 50px;">';
+								}
+								output += response.data.title+'<br /><a href="#" class="subjectRemove">(remove)</a></p>';
+							now = Math.round((new Date()).getTime() / 1);
+							parent.find('.singleSubjectPreview').html(output).show();
+							parent.find('.singleSubjectInput').hide();
+							parent.find('.singleSubjectField').val(response.data.id);
+
+							parent.parent().append('<div class="singleSubject"><a class="subjectAdd button" href="#">Add <br />Speaker/Topic</a><div class="singleSubjectInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSubject['+now+']" id="" class="singleSubjectField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="subjectCancelAdd" href="#">Cancel</a></div><div class="singleSubjectPreview" style="display: none;"></div></div>');
+							//alert(response.data);
+						});
+					}
+
+				});
+				e.preventDefault();
+				//addSuggest();
+			});
+		
+		
+		
+		
 		jQuery('.subjectRemove').live('click',function(e){
 			if (confirm("Are you sure you want to remove this speaker/topic? Doing so will unlink any comment blocks you have added. In other words, a pain to fix.")) {
 			      jQuery(this).parent().parent().parent().find('.subjectAdd').show();
@@ -1065,6 +1118,9 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				}
 				});
 		}
+		
+		
+		
 		
 			function addSourceRow(name,sourceType,sourceName,sourceUrl){
 				if (typeof sourceType === "undefined" || sourceType===null) sourceType = '';
@@ -1615,7 +1671,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		<?php
 		$args = array(
 			'textarea_rows'=>6
-		//	'quicktags'=>false
+		
 			
 		);
 	
@@ -1693,6 +1749,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		 ?><br />
 		<h2>Sources:</h2>
 		<p>List type of source (e.g. official document, AP, etc.), title and if possible, URL.</p>
+			<input type="text" name="singleSource[<?php echo time(); ?>]" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="" size="20" />
 		<table id="sourceTable">
 		<tr><th>Type (required)</th><th>Name (required)</th><th>URL (optional)</th><th></th></tr>
 		<tr class="sourceRow"><td><input type="text" class="sourceType" name="sourceType[<?php echo time(); ?>]" size="12"/></td><td><input type="text" class="sourceName" name="sourceName[<?php echo time(); ?>]" size="12"/></td><td><input type="text" name="sourceUrl[<?php echo time(); ?>]" class="sourceUrl" size="12"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>
@@ -1962,6 +2019,21 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 
 			}
 
+		}elseif("popcornlm_sources"==$_POST['post_type']){
+			$sourceArray = array();
+			$sourceArray['popcornsourceabstract'] = esc_attr($_POST['popcornsourceabstract']);
+		
+			$sourceArray['sourceUrl'] = esc_attr($_POST['sourceUrl']);
+
+			foreach($sourceArray as $k=>$v){
+				$new = $v;
+				$old = get_post_meta($post_id,$k,true);
+				if($new && $new != $old){
+					update_post_meta($post_id,$k,$new);
+				}elseif(''==$new && $old){
+					delete_post_meta($post_id,$k,$old);
+				}
+			}
 		}
 
 	}

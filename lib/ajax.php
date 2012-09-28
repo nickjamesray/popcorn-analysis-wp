@@ -14,6 +14,8 @@ class PopcornLM_Ajax {
 		add_action('wp_ajax_popcornlm-template-meta', array($this, 'templateMeta'));
 		add_action('wp_ajax_popcornlm-create-video-record', array($this,'createVideoRecord'));
 		add_action('wp_ajax_popcornlm-update-video-record', array($this,'updateVideoRecord'));
+		
+		add_action('wp_ajax_popcornlm-source-list', array($this, 'SourceList'));
 	}
 	
 	
@@ -78,7 +80,7 @@ class PopcornLM_Ajax {
 			$entry['subject'] = esc_attr($_POST['subject']);
 			$entry['label'] = esc_attr($_POST['label']);
 			$entry['title'] = esc_attr($_POST['title']);
-			$entry['text'] = esc_attr($_POST['text']);
+			$entry['text'] = $_POST['text'];
 			$entry['sources'] = $_POST['sources'];
 
 			//now we find to make sure this exists. If for some reason it does not, we can create the record instead.
@@ -121,7 +123,8 @@ class PopcornLM_Ajax {
 	}
 	
 	public function SubjectList(){
-		
+		$q = strtolower($_REQUEST["q"]);
+		if (!$q) return;
 		$args = array(
 					'post_type'=>'popcornlm_subjects',
 					'posts_per_page'=>-1,
@@ -130,14 +133,41 @@ class PopcornLM_Ajax {
 				);
 				$loop = new WP_Query($args);
 				while ($loop->have_posts()) : $loop->the_post();
-				 echo '<div class="subjectAjax">'.get_the_title().'</div>';
-				
-				echo "\n";
+				$title = get_the_title();
+				$titleCheck = strtolower($title);
+				if(strpos($titleCheck,$q)!==false){
+					echo '<div class="subjectAjax">'.get_the_title().'</div>';
+					echo "\n";
+				}
+	
+				endwhile;
+	
+		die();
+	}
+	
+	public function SourceList(){
+		$q = strtolower($_REQUEST["q"]);
+		if (!$q) return;
+		$args = array(
+					'post_type'=>'popcornlm_sources',
+					'posts_per_page'=>-1,
+					'orderby'=>'title',
+					'order'=>'ASC'
+				);
+				$loop = new WP_Query($args);
+				while ($loop->have_posts()) : $loop->the_post();
+				 $title = get_the_title();
+				$titleCheck = strtolower($title);
+				if(strpos($titleCheck,$q)!==false){
+					echo '<div class="sourceAjax">'.get_the_title().'</div>';
+					echo "\n";
+				}
 				
 				endwhile;
 	
 		die();
 	}
+	
 	
 	public function SingleSubject(){
 		
