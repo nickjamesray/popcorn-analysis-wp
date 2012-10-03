@@ -16,6 +16,7 @@ class PopcornLM_Ajax {
 		add_action('wp_ajax_popcornlm-update-video-record', array($this,'updateVideoRecord'));
 		
 		add_action('wp_ajax_popcornlm-source-list', array($this, 'SourceList'));
+		add_action('wp_ajax_popcornlm-single-source', array($this, 'SingleSource'));
 	}
 	
 	
@@ -75,12 +76,12 @@ class PopcornLM_Ajax {
 			//we have the essentials, let's find and update to database.
 			$entry = array();
 			$entry['id'] = $_POST['id'];
-
+			///wtf with the escaping!
 			$entry['time'] = $_POST['time'];
 			$entry['subject'] = esc_attr($_POST['subject']);
 			$entry['label'] = esc_attr($_POST['label']);
 			$entry['title'] = esc_attr($_POST['title']);
-			$entry['text'] = $_POST['text'];
+			$entry['text'] = esc_textarea($_POST['text']);
 			$entry['sources'] = $_POST['sources'];
 
 			//now we find to make sure this exists. If for some reason it does not, we can create the record instead.
@@ -88,17 +89,26 @@ class PopcornLM_Ajax {
 			$existCheck = $wpdb->get_row("SELECT * FROM $wpdb->postmeta WHERE meta_key = 'resourceBlock' AND meta_value LIKE '%$id%'",ARRAY_A);
 			if($existCheck){
 				//it exists, now we just need to update it.
-				$entryData = serialize($entry);
+				
 				if(is_numeric($_POST['postId'])){
 					$postId = $_POST['postId'];
-				$update = $wpdb->query("UPDATE $wpdb->postmeta SET meta_value='$entryData' WHERE post_id=$postId AND meta_key = 'resourceBlock' AND meta_value LIKE '%$id%'");
-				$array['response'] = $update;
+					$old = unserialize($existCheck['meta_value']);
+					$update = update_post_meta($postId,'resourceBlock',$entry,$old);
+					if($update||$entry==$old){
+						//either the update happened or there were no changes
+						$array['response'] = 'success';
+						$array['message'] = 'Your entry has been updated!';
+					}else{
+						$array['response'] = 'fail';
+						$array['message'] = 'There was a system error. Please try again.';
+					}
+					
 			}
 				
 				
 				//$array['response'] = serialize($entry);
 			}else{
-				//it does not yet exist. Let's go ahead and create it, since we assume that's what they want to do anyway.
+				//it does not yet exist. This shouldn't happen because clicking the update will give it an ID. Bad news if its mistaken.
 				
 			}
 			
@@ -136,7 +146,7 @@ class PopcornLM_Ajax {
 				$title = get_the_title();
 				$titleCheck = strtolower($title);
 				if(strpos($titleCheck,$q)!==false){
-					echo '<div class="subjectAjax">'.get_the_title().'</div>';
+					echo get_the_title();
 					echo "\n";
 				}
 	
@@ -159,7 +169,7 @@ class PopcornLM_Ajax {
 				 $title = get_the_title();
 				$titleCheck = strtolower($title);
 				if(strpos($titleCheck,$q)!==false){
-					echo '<div class="sourceAjax">'.get_the_title().'</div>';
+					echo get_the_title();
 					echo "\n";
 				}
 				
@@ -185,6 +195,26 @@ class PopcornLM_Ajax {
 			$array['subhead'] = $subjectMeta['subjectSubhead'][0];
 		}
 		//eventually we will include the text body here, but not right now.
+		
+		
+		
+		echo json_encode(array('data'=>$array));
+		die();
+	}
+	
+	public function SingleSource(){
+		
+		$array = array();
+		$source = get_page_by_title($_GET['source'],ARRAY_A,'popcornlm_sources');
+		
+		$array['title'] = $_GET['source'];
+		$array['id'] = $source['ID'];
+	//	$sourceMeta = get_post_custom($source['ID']);
+		
+		// if(!empty($sourceMeta['subjectSubhead'])){
+		// 		$array['subhead'] = $subjectMeta['subjectSubhead'][0];
+		// 	}
+		//eventually we will include the text body and source type here, but not right now.
 		
 		
 		

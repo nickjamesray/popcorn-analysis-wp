@@ -145,7 +145,7 @@ class PopcornLM {
 			add_action('admin_notices', array($this,'my_admin_notice'));
 		
 		if(is_admin()){
-			add_action('init','addPopcornLMThickbox');
+		//	add_action('init','addPopcornLMThickbox');
 		}
 		
 		
@@ -236,7 +236,7 @@ class PopcornLM {
 								$subjectMeta = get_post_custom($val);
 								$subjectTitle = get_the_title($val);
 								//print_r($subjectMeta);
-								echo '<div class="popcornLMAlert"></div>';
+							//	echo '<div class="popcornLMAlert"></div>';
 									//we want to display photo on the left with name on the right
 									echo '<div class="resourceListDisplayHead">';
 									echo '<div class="resourceListDisplayHeadImage">';
@@ -309,14 +309,36 @@ class PopcornLM {
 											
 											echo '<h6>'.$sourceHead.':</h6>';
 											echo '<ul>';
-											foreach($blockInfo['sources'] as $id=>$source){
-												echo '<li>';
-												if($source['url']!=''){
-													echo '<a href="'.$source['url'].'" target="_blank">'.$source['name'].'</a>';
+											foreach($blockInfo['sources'] as $id=>$sourceId){
+												if(is_numeric($sourceId)){
+													$name = get_the_title($sourceId);
+													$url = get_post_meta($sourceId,'sourceUrl',true);
+
+													echo '<li>';
+													if($url!=''){
+														echo '<a href="'.$url.'" class="popcornLMSourceLink" target="_blank">'.$name.'</a>';
+													}else{
+														echo $name;
+													}
+													$types = wp_get_object_terms($sourceId,'source_types');
+													if(!empty($types)){
+														$counter = 0;
+														//counter so we only put comma after first one, not before
+														echo '<span class="popcornLMSourceType">';
+														foreach($types as $type){
+															if($counter>0){
+																echo ', ';
+															}
+															echo $type->name;
+															$counter++;
+														}
+														echo '</span>';
+													}
+
+
+													echo '</li>';
 												}
-												echo '<span class="popcornLMSourceType">'.$source['type'].'</span>';
-												
-												echo '</li>';
+
 											}
 											echo '</ul>';
 											
@@ -508,22 +530,7 @@ class PopcornLM {
 						
 						
 						
-						
-					// $script .= '
-					// 					pop';
-					// 						foreach($sortedTimes as $key=>$val){
-					// 							foreach($val as $id=>$info){
-					// 								$script .= '.code({
-					// 									start : '.$info['time'].',
-					// 									end : 50,
-					// 									onStart : function(){
-					// 									//	jQuery("#subject_'.$info['subject'].'").prepend("cat");
-					// 									}
-					// 
-					// 								})';
-					// 							}	
-					// 						}
-					// 						$script .= ';';
+			
 						
 					}
 						
@@ -552,7 +559,7 @@ class PopcornLM {
 				
 				
 			}else{
-				echo '<p>This video is unavailable. Please check back soon.';
+				echo '<p>This video is unavailable. Please check back soon.</p>';
 				return;
 			}
 			
@@ -1043,31 +1050,26 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		
 			jQuery('.sourceAdd').live('click',function(e){
 
-			var parent = jQuery(this).parent();	jQuery(this).hide().parent().find('.singleSubjectInput').show().find('.singleSourceField').suggest(ajaxurl + '?action=popcornlm-subject-list', {
+			var parent = jQuery(this).parent();	jQuery(this).hide().parent().find('.singleSourceInput').show().find('.singleSourceField').suggest(ajaxurl + '?action=popcornlm-source-list', {
 					delay: 500,
 					minchars: 2,
 					onSelect: function(){
 						var data = {
-							action: 'popcornlm-single-subject',
-							subject : this.value
+							action: 'popcornlm-single-source',
+							source : this.value
 							};
 
 						jQuery.getJSON(ajaxurl, data, function(response){
 
 							var output = '';
-							if(response.data.image!==undefined){
-								output += '<img class="singleSubjectPreviewImg" src="'+response.data.image+'" />';
-								output += '<p style="text-align: center; font-weight: bold;">';
-								}else{
-									output += '<p style="text-align: center; font-weight: bold; margin-top: 50px;">';
-								}
-								output += response.data.title+'<br /><a href="#" class="subjectRemove">(remove)</a></p>';
+						
+							output += response.data.title+'<br /><a href="#" class="sourceRemove">(remove)</a></p>';
 							now = Math.round((new Date()).getTime() / 1);
-							parent.find('.singleSubjectPreview').html(output).show();
-							parent.find('.singleSubjectInput').hide();
-							parent.find('.singleSubjectField').val(response.data.id);
+							parent.find('.singleSourcePreview').html(output).show();
+							parent.find('.singleSourceInput').hide();
+							parent.find('.singleSourceField').val(response.data.id);
 
-							parent.parent().append('<div class="singleSubject"><a class="subjectAdd button" href="#">Add <br />Speaker/Topic</a><div class="singleSubjectInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSubject['+now+']" id="" class="singleSubjectField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="subjectCancelAdd" href="#">Cancel</a></div><div class="singleSubjectPreview" style="display: none;"></div></div>');
+							parent.parent().append('<div class="singleSource"><a class="sourceAdd button" href="#">Connect to Source</a><div class="singleSourceInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSource['+now+']" id="" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="sourceCancelAdd" href="#">Cancel</a></div><div class="singleSourcePreview" style="display: none;"></div></div>');
 							//alert(response.data);
 						});
 					}
@@ -1245,23 +1247,31 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			//alert(postId);
 			//sourceRow
 			var sources = {};
-			jQuery('.sourceRow').each(function(index,thisElem){
-				var rowName = jQuery(this).find('.sourceName').attr('name');
-				var sourceId = rowName.split("[")[1].split("]")[0];
-				var name = jQuery(this).find('.sourceName').val();
-				var type = jQuery(this).find('.sourceType').val();
-				var url = jQuery(this).find('.sourceUrl').val();
+			jQuery('.singleSource').each(function(index,thisElem){
+				// var rowName = jQuery(this).find('.sourceName').attr('name');
+				// 				var sourceId = rowName.split("[")[1].split("]")[0];
+				// 				var name = jQuery(this).find('.sourceName').val();
+				// 				var type = jQuery(this).find('.sourceType').val();
+				// 				var url = jQuery(this).find('.sourceUrl').val();
+				var source = jQuery(this).find('.singleSourceField').val();
 				
-					
-				if(name==''&&type==''&&url==''){
-				}else{
-					sources[sourceId] = {};
-					sources[sourceId]['name'] = name;
-					sources[sourceId]['type'] = type;
-					sources[sourceId]['url'] = url;
+				if(source!=''){
+					var temp = jQuery(this).find('.singleSourceField').attr('name')
+					var tempID = temp.split("[")[1].split("]")[0];
+					sources[tempID] = source;
 				}
 				
 				
+					
+				// if(name==''&&type==''&&url==''){
+				// 			}else{
+				// 				sources[sourceId] = {};
+				// 				sources[sourceId]['name'] = name;
+				// 				sources[sourceId]['type'] = type;
+				// 				sources[sourceId]['url'] = url;
+				// 			}
+				
+
 			
 				
 				
@@ -1748,14 +1758,26 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 	
 		 ?><br />
 		<h2>Sources:</h2>
-		<p>List type of source (e.g. official document, AP, etc.), title and if possible, URL.</p>
-			<input type="text" name="singleSource[<?php echo time(); ?>]" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="" size="20" />
-		<table id="sourceTable">
+		<p>Search for your source from the site database. If your source is new to this site, <a href="post-new.php?post_type=popcornlm_sources" target="_blank">add it here</a> (new window), then return to this form and connect to it.</p>
+		
+			
+			<div class="singleSource">
+			<a class="sourceAdd button" href="#">Connect to Source</a>
+			<div class="singleSourceInput" style="display: none;">
+			<small>Type and choose from the list that appears.</small>
+			<input type="text" name="singleSource[<?php echo time(); ?>]" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="sourceCancelAdd" href="#">Cancel</a></div>
+			<div class="singleSourcePreview" style="display: none;"></div>
+			</div>
+			
+			
+			
+			
+	<!--	<table id="sourceTable">
 		<tr><th>Type (required)</th><th>Name (required)</th><th>URL (optional)</th><th></th></tr>
 		<tr class="sourceRow"><td><input type="text" class="sourceType" name="sourceType[<?php echo time(); ?>]" size="12"/></td><td><input type="text" class="sourceName" name="sourceName[<?php echo time(); ?>]" size="12"/></td><td><input type="text" name="sourceUrl[<?php echo time(); ?>]" class="sourceUrl" size="12"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>
 		</table>
 		
-		<p id="addSourceP"><a class="button addSource" href="#" >Add a Source</a></p><br />
+		<p id="addSourceP"><a class="button addSource" href="#" >Add a Source</a></p><br />-->
 		<p style="text-align: right;"><a class="button-primary submitResource" href="#" >Submit Record</a></p>
 		
 		
@@ -1765,6 +1787,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		<div id="resourceListContainer">
 		<?php
 		$resourceBlocks = get_post_meta($post->ID,'resourceBlock');
+		
 		if($resourceBlocks&&is_array($resourceBlocks)){
 			
 			$sortedBlocks = array();
@@ -1808,6 +1831,17 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					//this sorts them by time. They are now separated by name and sorted by time. We can display!
 					krsort($sortedBlocks[$val]);
 					echo '<div class="resourceListDisplayColumn">';
+					
+					
+					echo '<div class="resourceListDisplayHead">';
+				
+					echo '<div class="popcornLMDisplayHeadText">';
+					echo '<h4 class="popcornLMDisplayHeadTitle">'.get_the_title($val).'</h4>';
+					
+					echo '</div>';
+					echo '</div><div style="clear: both;"></div>';
+					
+					
 					foreach($sortedBlocks[$val] as $time=>$id){
 						//another foreach in case there are two blocks with the same time
 						foreach($id as $blockId=>$blockInfo){
@@ -1850,14 +1884,36 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 
 									echo '<h6>'.$sourceHead.':</h6>';
 									echo '<ul class="popcornLMSourceList">';
-									foreach($blockInfo['sources'] as $id=>$source){
-										echo '<li>';
-										if($source['url']!=''){
-											echo '<a href="'.$source['url'].'" class="popcornLMSourceLink" target="_blank">'.$source['name'].'</a>';
-										}
-										echo '<span class="popcornLMSourceType">'.$source['type'].'</span>';
+									foreach($blockInfo['sources'] as $id=>$sourceId){
+										if(is_numeric($sourceId)){
+											$name = get_the_title($sourceId);
+											$url = get_post_meta($sourceId,'sourceUrl',true);
+											
+											echo '<li>';
+											if($url!=''){
+												echo '<a href="'.$url.'" class="popcornLMSourceLink" target="_blank">'.$name.'</a>';
+											}else{
+												echo $name;
+											}
+											$types = wp_get_object_terms($sourceId,'source_types');
+											if(!empty($types)){
+												$counter = 0;
+												//counter so we only put comma after first one, not before
+												echo '<span class="popcornLMSourceType">';
+												foreach($types as $type){
+													if($counter>0){
+														echo ', ';
+													}
+													echo $type->name;
+													$counter++;
+												}
+												echo '</span>';
+											}
+											
 
-										echo '</li>';
+											echo '</li>';
+										}
+										
 									}
 									echo '</ul>';
 
@@ -1882,7 +1938,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			//we need to sort the times so lowest are first.
 			
 		
-			//print_r($sortedBlocks);
+			print_r($sortedBlocks);
 			
 		}
 		
@@ -1954,7 +2010,6 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				}
 				$popcornArray['popcornLMOptions'] = json_encode($optionsArray);
 			}
-			
 			
 			
 			

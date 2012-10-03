@@ -14,7 +14,7 @@ class PopcornLM_Source {
 		
 		
 		
-		add_action('admin_head',array($this,'labelJQueryUI'));
+	
 		
 		add_action('add_meta_boxes', array($this,'registerMetaBoxes'));
 		
@@ -29,8 +29,7 @@ class PopcornLM_Source {
 		add_filter('get_sample_permalink_html', array($this,'perm'), '',4);
 		add_filter( 'post_updated_messages', array($this,'updated_messages') );
 		
-	//	add_filter( 'screen_layout_columns', array($this,'so_screen_layout_columns') );
-	//	add_filter( 'get_user_option_screen_layout_popcornlm_sources', array($this,'so_screen_layout_post') );
+	
 		
 	
 	
@@ -50,7 +49,7 @@ class PopcornLM_Source {
 
 		?>
 		<h2>Setting up the source:</h2>
-		<p>First, choose from the "Source Types" box that which best represents your source, or create a new one. Next, add in the title above, URL if it exists, and abstract/brief description of the source. Last, enter comma-separated tags in the "Source Tags" box that are related to this source, e.g. global warming, climate change, clowns, etc.</p>
+		<p>First, add in the title above, URL if it exists, and abstract/brief description of the source. Next, choose from the types of sources in the box "Source Type," Last, enter comma-separated tags in the "Source Tags" box that are related to this source, e.g. global warming, climate change, clowns, etc.</p>
 		
 		<h4>Step 1: Is there a URL? If so, enter it here (enter the title above):</h4>
 			<input type="text" name="sourceUrl" id="sourceUrl" value="<?php echo $sourceMeta['sourceUrl'][0];?>" size="32" /><br /><br />
