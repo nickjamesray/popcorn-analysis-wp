@@ -290,6 +290,19 @@
 #popcornupdateinfobody,#popcorninfobody{
 	height: 300px;
 }
+.singleSource, .updateSingleSource{
+	
+	display: block;
+	margin: 0 auto;
+	padding: 5px;
+	width: 95%;
+	float: none;
+}
+.singleSourcePreview{
+	margin-bottom: 5px;
+	border-bottom: dotted 1px #666;
+	padding-bottom: 5px;
+}
 
 
 

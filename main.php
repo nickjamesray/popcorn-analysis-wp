@@ -982,24 +982,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			return time;
 		}
 
-		
-		//repeatable script
-		jQuery('.repeatable-add').click(function() {
-			field = jQuery(this).closest('td').find('.custom_repeatable li:last').clone(true);
-			fieldLocation = jQuery(this).closest('td').find('.custom_repeatable li:last');
-			jQuery('input', field).val('').attr('name', function(index, name) {
-				return name.replace(/(\d+)/, function(fullMatch, n) {
-					return Number(n) + 1;
-				});
-			})
-			field.insertAfter(fieldLocation, jQuery(this).closest('td'))
-			return false;
-		});
-
-		jQuery('.repeatable-remove').click(function(){
-			jQuery(this).parent().remove();
-			return false;
-		});
+	
 
 
 		jQuery('.changeConfig').live('click',function(e){
@@ -1093,48 +1076,50 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			e.preventDefault();
 		});
 		
+		
+		
+		
 		jQuery('.subjectCancelAdd').live('click',function(e){
 			jQuery(this).parent().hide().parent().find('.subjectAdd').show();
 			e.preventDefault();
 		});
 	
-		
-		function addSuggest(){
-			jQuery(".singleSubjectField").suggest(ajaxurl+ "?action=popcornlm-subject-list", { 
-				delay: 500, 
-				minchars: 2,
-				onSelect: function(){
+		jQuery('.popcornLMBlockDelete').live('click',function(e){
+		//first we need to confirm block delete
+			if (confirm("Are you sure you want to remove this entry? This cannot be undone.")) {
+				//then we need to send the ID and entry ID off to ajax to delete that entry
+				var postId = jQuery('#idOfPost').val();
+				var shell = jQuery(this).closest('.popcornLMBlockShell');
+				var entryId = shell.data('blockId');
+				
 					var data = {
-						action: 'popcornlm-single-subject',
-						subject : this.value
+						action: 'popcornlm-delete-video-record',
+						postId : postId,
+						entryId : entryId
 						};
 
-					jQuery.getJSON(ajaxurl, data, function(response){
-						
-						
-						
-						console.log(response);
-						//alert(response.data);
-					});
+						jQuery.post(ajaxurl, data, function(response){
+							//not sure why we need to parse here?
+							var response = jQuery.parseJSON(response);
 
-				}
-				});
-		}
-		
-		
-		
-		
-			function addSourceRow(name,sourceType,sourceName,sourceUrl){
-				if (typeof sourceType === "undefined" || sourceType===null) sourceType = '';
-				if (typeof sourceName === "undefined" || sourceName===null) sourceName = '';
-				if (typeof sourceUrl === "undefined" || sourceUrl===null) sourceUrl = '';
+							if(response.response=="success"){
+								//last we need to remove from the DOM.
+								
+								shell.animate({'height': 0},400,function(){
+									shell.hide().detach();
+								});
+								}else{
+									alert('There was a problem. Apologies!');
+									alert(response.response);
+								}
+
+							});
 				
-				var now = Math.round((new Date()).getTime() / 10);
-				var output = '<tr class="'+name+'Row"><td><input type="text" class="'+name+'Type" name="'+name+'Type['+now+']" size="12" value="'+sourceType+'"/></td><td><input type="text" class="'+name+'Name" name="'+name+'Name['+now+']" size="12" value="'+sourceName+'"/></td><td><input type="text" class="'+name+'Url" name="'+name+'Url['+now+']" size="12" value="'+sourceUrl+'"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>';
-				return output;
+				
+				
 			}
-		
-		
+			e.preventDefault();
+		});
 		
 		jQuery('.popcornLMBlockEdit').live('click',function(e){
 			//e.preventDefault();
@@ -1152,10 +1137,21 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			var sources = jQuery(this).closest('.popcornLMBlockInner').find('.popcornLMSourceList li');
 			sourceOutput = '';
 			sources.each(function(index){
-				var sourceType = jQuery(this).find('.popcornLMSourceType').html();
+			//	var sourceType = jQuery(this).find('.popcornLMSourceType').html();
+			
+				var sourceId = jQuery(this).attr('rel');
 				var sourceUrl = jQuery(this).find('.popcornLMSourceLink').attr('href');
 				var sourceName = jQuery(this).find('.popcornLMSourceLink').html();
-				sourceOutput += addSourceRow('updateSource',sourceType,sourceName,sourceUrl);
+				
+				
+				var now = Math.round((new Date()).getTime() / 1);
+				sourceOutput += '<div class="singleSource"><a class="sourceAdd button" href="#" style="display: none;">Connect to Source</a><div class="singleSourceInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSource['+now+']" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="'+sourceId+'" size="10" /><br /><a class="sourceCancelAdd" href="#">Cancel</a></div><div class="singleSourcePreview">'+sourceName+' <a href="#" class="sourceRemove">(remove)</a></div></div>';
+				
+				
+				
+				
+				
+				
 			});
 			//will change to updateSourceTable
 			jQuery('#updateSourceTable').html(sourceOutput);
@@ -1211,30 +1207,24 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		
 		
 
-		jQuery('.addSource').live('click',function(e){
-			
-			
-			//names the name for update
-			var output = addSourceRow('source');
-			jQuery('#sourceTable').append(output);
-			e.preventDefault();
-		});
-		//update source is for the update, not a new one.
 		
-	
-		
-		jQuery('.addUpdateSource').live('click',function(e){
-			
-			//names the name for update
-			var output = addSourceRow('updateSource');
-			jQuery('#updateSourceTable').append(output);
-			e.preventDefault();
-		});
 		
 		jQuery('.removeSource').live('click',function(e){
 			jQuery(this).parent().parent().detach();
 			e.preventDefault();
 		});
+		
+		
+		jQuery('.sourceRemove').live('click',function(e){
+			
+			      jQuery(this).parent().parent().parent().find('.sourceAdd').show();
+				  jQuery(this).parent().parent().parent().find('.singleSourceField').val('');
+				  jQuery(this).parent().html('');
+			
+			e.preventDefault();
+		});
+		
+		
 
 		jQuery('.submitResource').live('click',function(e){
 			var time = jQuery('#videoTimeHidden').val();
@@ -1244,15 +1234,10 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			var text = get_tinymce_content();
 			var id = jQuery('#timeOfPost').val();
 			var postId = jQuery('#idOfPost').val();
-			//alert(postId);
-			//sourceRow
+			
 			var sources = {};
 			jQuery('.singleSource').each(function(index,thisElem){
-				// var rowName = jQuery(this).find('.sourceName').attr('name');
-				// 				var sourceId = rowName.split("[")[1].split("]")[0];
-				// 				var name = jQuery(this).find('.sourceName').val();
-				// 				var type = jQuery(this).find('.sourceType').val();
-				// 				var url = jQuery(this).find('.sourceUrl').val();
+			
 				var source = jQuery(this).find('.singleSourceField').val();
 				
 				if(source!=''){
@@ -1260,28 +1245,9 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					var tempID = temp.split("[")[1].split("]")[0];
 					sources[tempID] = source;
 				}
-				
-				
-					
-				// if(name==''&&type==''&&url==''){
-				// 			}else{
-				// 				sources[sourceId] = {};
-				// 				sources[sourceId]['name'] = name;
-				// 				sources[sourceId]['type'] = type;
-				// 				sources[sourceId]['url'] = url;
-				// 			}
-				
-
-			
-				
-				
+	
 			});
-		
-			
-			
-			
-		
-			
+
 			var data = {
 				action : 'popcornlm-create-video-record',
 				time : time,
@@ -1302,9 +1268,64 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					//we need to update the time in the box for the next entry.
 					var now = Math.round((new Date()).getTime() / 10);
 					jQuery('#timeOfPost').val(now);
+					alert(response.data.labelName);
+					//now we need to insert the info into the proper spot below.
+					
+				var insert = '<div class="popcornLMBlockShell popcornLMBlockShell-'+label+'" rel="'+time+'_'+id+'_'+subject+'_'+label+'"><div class="popcornLMBlockInner"><div class="popcornLMBlockTitle"><div class="popcornLMBlockTitleInner"><h4>'+title+'</h4><span class="popcornLMBlockTime" rel="'+time+'">'+secondsToMinutesHours(time)+'</span></div><div class="popcornLMBlockLabelLink"><div class="popcornLMBlockEditLinks"><span class="popcornLMBlockExpandText"><a class="popcornLMBlockExpand" href="#" style="margin-right: 5px;">Expand</a> - </span><a class="popcornLMBlockEdit" href="#updateVideoLinkBox">Edit</a> - <a class="popcornLMBlockDelete" href="#">Delete</a></div><p class="popcornLMHiddenLabel">';
+				
+				
+				
+			insert +=	'</p><div style="clear: both;"></div></div></div><div class="popcornLMContentArea"><p>tdest</p></div></div></div>';
+			//still need source data.
+			
+				var column = jQuery('.resourceListDisplayColumn[rel='+subject+']');
+				var blockList = new Array();
+				var last = 0;
+				column.children('.popcornLMBlockShell').each(function(index,block){
+					var blockTime = jQuery(this).data('blockTime');
+					blockTime = parseInt(blockTime);
+					if(last==blockTime){
+						blockTime = last+.001;
+					}
+				
+					last = blockTime;
+					blockList.push(blockTime);
+				});
+				var initLength = blockList.length;
+				
+				blockList.push(time);
+				
+				//sorts by time (ascending) and then reverses it, so we have the proper spot.
+				blockList.sort();
+				blockList.reverse();
+					
+				//returns index, or key, for where that time landed after the sort.
+				var i = jQuery.inArray(time,blockList);
+					if(i==initLength){
+						column.append(insert);
+					}else{
+						
+						jQuery(column.children('.popcornLMBlockShell')[i]).before(insert);
+					}
+					
+					
+					
 					alert('Your entry has been added!');
+					
+					if (jQuery("#wp-popcorninfobody-wrap").hasClass("tmce-active")){
+				         tinyMCE.editors.popcorninfobody.setContent('');
+				    }else{
+				         jQuery('#popcorninfobody').val('');
+				    }
+				 jQuery('#resourceTitle').val('');
+					
+					
 				}else{
-					alert(response.problem);
+					if(response.message){
+						alert(response.message);
+					}else{
+						alert('There was a problem. Apologies.');
+					}
 				}
 				
 				//alert(response.response);
@@ -1316,12 +1337,37 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		});
 		
 		
+		function insertBySort(id,insertData){
+			var insert = insertData;
+			//the values in here need changed but idea is the same.
+			var list = new Array();
+			jQuery('p.textSort').each(function(i,item){
+				list.push(jQuery(this).attr('rel'));
+			});
+			var initLength = list.length;
+			
+			list.push(id);
+		
+			list.sort();
+			
+			var i = jQuery.inArray(4,list);
+			
+			if(i==initLength){
+				jQuery('#testsortbox').append(insert);
+			}else{
+				jQuery(jQuery('#testsortbox').children('.textSort')[i]).before(insert);
+			}
+			
+			
+		}
+		
+		
 		jQuery('.updateResource').live('click',function(e){
 			var time = jQuery('#updateVideoTimeHidden').val();
 			var title = jQuery('#updateResourceTitle').val();
 			var subject = jQuery('#updateResourceSubject').val();
 			var label = jQuery('#updateResourceLabel').val();
-			if (jQuery("#wp-popcorninfobody-wrap").hasClass("tmce-active")){
+			if (jQuery("#wp-popcornupdateinfobody-wrap").hasClass("tmce-active")){
 				//popcornupdateinfobody is the ID
 			var text =	tinyMCE.editors.popcornupdateinfobody.getContent();
 		       
@@ -1334,26 +1380,16 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			
 			//sourceRow
 			var sources = {};
-			jQuery('.updateSourceRow').each(function(index,thisElem){
-				var rowName = jQuery(this).find('.updateSourceName').attr('name');
-				var sourceId = rowName.split("[")[1].split("]")[0];
-				var name = jQuery(this).find('.updateSourceName').val();
-				var type = jQuery(this).find('.updateSourceType').val();
-				var url = jQuery(this).find('.updateSourceUrl').val();
-				
-					
-				if(name==''&&type==''&&url==''){
-				}else{
-					sources[sourceId] = {};
-					sources[sourceId]['name'] = name;
-					sources[sourceId]['type'] = type;
-					sources[sourceId]['url'] = url;
-				}
-				
-				
+			jQuery('.updateSingleSource').each(function(index,thisElem){
 			
+				var source = jQuery(this).find('.singleSourceField').val();
 				
-				
+				if(source!=''){
+					var temp = jQuery(this).find('.singleSourceField').attr('name')
+					var tempID = temp.split("[")[1].split("]")[0];
+					sources[tempID] = source;
+				}
+	
 			});
 		
 			
@@ -1397,37 +1433,15 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		
 			function get_tinymce_content(){
 			    if (jQuery("#wp-popcorninfobody-wrap").hasClass("tmce-active")){
-			        return tinyMCE.activeEditor.getContent();
+			        return tinyMCE.editors.popcorninfobody.getContent();
 			    }else{
 			        return jQuery('#popcorninfobody').val();
 			    }
 			}
 		
-		function insertBySort(id,insertData){
-			var insert = insertData;
-			//the values in here need changed but idea is the same.
-			var list = new Array();
-			jQuery('p.textSort').each(function(i,item){
-				list.push(jQuery(this).attr('rel'));
-			});
-			var initLength = list.length;
-			
-			list.push(id);
 		
-			list.sort();
-			
-			var i = jQuery.inArray(4,list);
-			
-			if(i==initLength){
-				jQuery('#testsortbox').append(insert);
-			}else{
-				jQuery(jQuery('#testsortbox').children('.textSort')[i]).before(insert);
-			}
-			
-			
-		}
 		
-	//	insertBySort();
+
 		
 	});
 
@@ -1691,12 +1705,18 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 	
 		 ?><br />
 		<h2>Sources:</h2>
-		<p>List type of source (e.g. official document, AP, etc.), title and if possible, URL.</p>
-		<table id="updateSourceTable">
+		<p>Search for your source from the site database. If your source is new to this site, <a href="post-new.php?post_type=popcornlm_sources" target="_blank">add it here</a> (new window), then return to this form and connect to it.</p>
+		<div id="updateSourceTable">
 	
-		</table>
-		
-		<p id="updateSourceP"><a class="button addUpdateSource" href="#" >Add a Source</a></p><br />
+		</div>
+		<div class="updateSingleSource">
+		<a class="sourceAdd button" href="#">Connect to Source</a>
+		<div class="singleSourceInput" style="display: none;">
+		<small>Type and choose from the list that appears.</small>
+		<input type="text" name="singleSource[<?php echo time(); ?>]" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="sourceCancelAdd" href="#">Cancel</a></div>
+		<div class="singleSourcePreview" style="display: none;"></div>
+		</div>
+			
 		<p style="text-align: right;"><a class="button-primary updateResource" href="#" >Update Record</a></p>
 		
 		
@@ -1760,7 +1780,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		<h2>Sources:</h2>
 		<p>Search for your source from the site database. If your source is new to this site, <a href="post-new.php?post_type=popcornlm_sources" target="_blank">add it here</a> (new window), then return to this form and connect to it.</p>
 		
-			
+			<div class="sourceTable">
 			<div class="singleSource">
 			<a class="sourceAdd button" href="#">Connect to Source</a>
 			<div class="singleSourceInput" style="display: none;">
@@ -1769,15 +1789,10 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			<div class="singleSourcePreview" style="display: none;"></div>
 			</div>
 			
+			</div>
 			
 			
-			
-	<!--	<table id="sourceTable">
-		<tr><th>Type (required)</th><th>Name (required)</th><th>URL (optional)</th><th></th></tr>
-		<tr class="sourceRow"><td><input type="text" class="sourceType" name="sourceType[<?php echo time(); ?>]" size="12"/></td><td><input type="text" class="sourceName" name="sourceName[<?php echo time(); ?>]" size="12"/></td><td><input type="text" name="sourceUrl[<?php echo time(); ?>]" class="sourceUrl" size="12"/></td><td><a class="removeSource" href="#">Remove</a></td></tr>
-		</table>
-		
-		<p id="addSourceP"><a class="button addSource" href="#" >Add a Source</a></p><br />-->
+<div style="clear: both;"></div>
 		<p style="text-align: right;"><a class="button-primary submitResource" href="#" >Submit Record</a></p>
 		
 		
@@ -1785,7 +1800,9 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		</div>
 		
 		<div id="resourceListContainer">
+		<h2 style="text-align: center;">Video List Preview</h2>
 		<?php
+		//order is not 100% accurate on add block if add block is within two seconds or so of the other source. Not a common problem.
 		$resourceBlocks = get_post_meta($post->ID,'resourceBlock');
 		
 		if($resourceBlocks&&is_array($resourceBlocks)){
@@ -1830,7 +1847,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				foreach($subjects as $id=>$val){
 					//this sorts them by time. They are now separated by name and sorted by time. We can display!
 					krsort($sortedBlocks[$val]);
-					echo '<div class="resourceListDisplayColumn">';
+					echo '<div class="resourceListDisplayColumn" rel="'.$val.'">';
 					
 					
 					echo '<div class="resourceListDisplayHead">';
@@ -1889,11 +1906,11 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 											$name = get_the_title($sourceId);
 											$url = get_post_meta($sourceId,'sourceUrl',true);
 											
-											echo '<li>';
+											echo '<li rel="'.$sourceId.'">';
 											if($url!=''){
 												echo '<a href="'.$url.'" class="popcornLMSourceLink" target="_blank">'.$name.'</a>';
 											}else{
-												echo $name;
+												echo '<span class="popcornLMSourceLink">'.$name.'</span>';
 											}
 											$types = wp_get_object_terms($sourceId,'source_types');
 											if(!empty($types)){
@@ -1938,7 +1955,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			//we need to sort the times so lowest are first.
 			
 		
-			print_r($sortedBlocks);
+			//print_r($sortedBlocks);
 			
 		}
 		

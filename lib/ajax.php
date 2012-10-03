@@ -14,6 +14,7 @@ class PopcornLM_Ajax {
 		add_action('wp_ajax_popcornlm-template-meta', array($this, 'templateMeta'));
 		add_action('wp_ajax_popcornlm-create-video-record', array($this,'createVideoRecord'));
 		add_action('wp_ajax_popcornlm-update-video-record', array($this,'updateVideoRecord'));
+		add_action('wp_ajax_popcornlm-delete-video-record', array($this,'deleteVideoRecord'));
 		
 		add_action('wp_ajax_popcornlm-source-list', array($this, 'SourceList'));
 		add_action('wp_ajax_popcornlm-single-source', array($this, 'SingleSource'));
@@ -54,6 +55,9 @@ class PopcornLM_Ajax {
 			if($query&&$query->found_posts>0){
 				//it was added, now we can return success so jquery can insert that data onto the page where needed.
 				$array['response'] = 'success';
+				//$custom = get_post_meta($_POST['label'],'labelVals',true);
+				
+				//$array['data']['labelName'] = get_the_title($_POST['label']); 
 			}else{
 				//not added for some reason
 				$array['response'] = 'fail';
@@ -63,7 +67,7 @@ class PopcornLM_Ajax {
 		//	$array['response'] = $entry;
 		}else{
 			$array['response'] = 'fail';
-			$array['problem'] = 'Not all required fields were entered. Please try again.';
+			$array['message'] = 'Not all required fields were entered. Please try again.';
 		}
 		echo json_encode($array);
 		die();
@@ -128,7 +132,22 @@ class PopcornLM_Ajax {
 	
 	
 	public function deleteVideoRecord(){
+		global $wpdb;
+		$array = array();
 		
+		if($_POST['entryId']&&$_POST['postId']){
+			$entryId = $_POST['entryId'];
+			$postId = $_POST['postId'];
+			$delete = $wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = $postId AND meta_key = 'resourceBlock'  AND meta_value LIKE '%$entryId%' LIMIT 1");
+			if($delete){
+				$array['response'] = 'success';
+			}else{
+				$array['response'] = 'fail';
+			}
+			
+		}
+		
+		echo json_encode($array);
 		die();
 	}
 	
