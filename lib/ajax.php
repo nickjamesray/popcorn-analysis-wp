@@ -56,7 +56,30 @@ class PopcornLM_Ajax {
 				//it was added, now we can return success so jquery can insert that data onto the page where needed.
 				$array['response'] = 'success';
 				//$custom = get_post_meta($_POST['label'],'labelVals',true);
-				
+				if(!empty($entry['sources'])){
+					$counter = 0;
+					foreach($entry['sources'] as $sourceId){
+						$array['data']['sources'][$counter]['id'] = $sourceId;
+						$array['data']['sources'][$counter]['title'] = get_the_title($sourceId);
+						$array['data']['sources'][$counter]['url'] = get_post_meta($sourceId,'sourceUrl',true);
+						$types = wp_get_object_terms($sourceId,'source_types');
+						$array['data']['sources'][$counter]['types'] = '';
+						if(!empty($types)){
+							$count = count($types);
+							foreach($types as $type){
+								$array['data']['sources'][$counter]['types'] .= $type->name;
+								if($count>1){
+									$array['data']['sources'][$counter]['types'] .= ', ';
+								}
+								$count--;
+							}
+						}
+						$counter++;
+					}
+				}else{
+					$array['data']['sources'] = 'none';
+				}
+			
 				//$array['data']['labelName'] = get_the_title($_POST['label']); 
 			}else{
 				//not added for some reason

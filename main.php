@@ -1268,15 +1268,42 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					//we need to update the time in the box for the next entry.
 					var now = Math.round((new Date()).getTime() / 10);
 					jQuery('#timeOfPost').val(now);
-					alert(response.data.labelName);
+					var labelName = jQuery('#resourceLabel').find(':selected').text();
+					if(labelName=='None'){
+						labelName='Unlabeled';
+					}
 					//now we need to insert the info into the proper spot below.
-					
-				var insert = '<div class="popcornLMBlockShell popcornLMBlockShell-'+label+'" rel="'+time+'_'+id+'_'+subject+'_'+label+'"><div class="popcornLMBlockInner"><div class="popcornLMBlockTitle"><div class="popcornLMBlockTitleInner"><h4>'+title+'</h4><span class="popcornLMBlockTime" rel="'+time+'">'+secondsToMinutesHours(time)+'</span></div><div class="popcornLMBlockLabelLink"><div class="popcornLMBlockEditLinks"><span class="popcornLMBlockExpandText"><a class="popcornLMBlockExpand" href="#" style="margin-right: 5px;">Expand</a> - </span><a class="popcornLMBlockEdit" href="#updateVideoLinkBox">Edit</a> - <a class="popcornLMBlockDelete" href="#">Delete</a></div><p class="popcornLMHiddenLabel">';
+					var relInsert = time+'_'+jQuery.trim(id)+'_'+subject+'_'+label;
+				var insert = '<div class="popcornLMBlockShell popcornLMBlockShell-'+label+'" rel="'+relInsert+'"><div class="popcornLMBlockInner"><div class="popcornLMBlockTitle"><div class="popcornLMBlockTitleInner"><h4>'+title+'</h4><span class="popcornLMBlockTime" rel="'+time+'">'+secondsToMinutesHours(time)+'</span></div><div class="popcornLMBlockLabelLink"><div class="popcornLMBlockEditLinks"><span class="popcornLMBlockExpandText"><a class="popcornLMBlockExpand" href="#" style="margin-right: 5px;">Expand</a> - </span><a class="popcornLMBlockEdit" href="#updateVideoLinkBox">Edit</a> - <a class="popcornLMBlockDelete" href="#">Delete</a></div><p class="popcornLMHiddenLabel">'+labelName+'</p><div style="clear: both;"></div></div></div><div class="popcornLMContentArea">'+text+'</div>';
 				
+				if(sources.length>0){
+					if(sources.length>1){
+						insert += '<h6>Sources:</h6>';
+					}else{
+						insert += '<h6>Source:</h6>';
+					}	
+				}
+
+				insert += '<ul class="popcornLMSourceList">';
 				
+				if(response.data.sources!='none'){
+					//there are sources to iterate. yay!
+					jQuery.each(response.data.sources,function(k,val){
+						insert += '<li rel="'+val.id+'">';
+						if(val.url!=''){
+							insert += '<a href="'+val.url+'" class="popcornLMSourceLink" target="_blank">'+val.title+'</a>';
+						}else{
+							insert += '<span class="popcornLMSourceLink">'+val.title+'</span>';
+						}
+						if(val.types!=''){
+							insert += '<span class="popcornLMSourceType">'+val.types+'</span>';
+						}
+						insert += '</li>';
+					});
+				}
 				
-			insert +=	'</p><div style="clear: both;"></div></div></div><div class="popcornLMContentArea"><p>tdest</p></div></div></div>';
-			//still need source data.
+				insert += '</ul></div></div>';
+			
 			
 				var column = jQuery('.resourceListDisplayColumn[rel='+subject+']');
 				var blockList = new Array();
@@ -1307,6 +1334,34 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 						
 						jQuery(column.children('.popcornLMBlockShell')[i]).before(insert);
 					}
+					
+					var inserted = jQuery('.popcornLMBlockShell[rel="'+relInsert+'"]');
+					//last but not least, we need to apply the data rules so it can be edited like any other.
+					var	subHead = inserted.find('.popcornLMBlockTitle');
+						 title = subHead.outerHeight(true);
+						//title = title+10;
+						//so our images don't overflow.
+						inserted.find('img').css({'max-width':'97%','width':'auto','height':'auto'});
+						shell = inserted.outerHeight(true);
+						inserted.data('fullHeight',shell);
+						inserted.data('titleHeight',title);
+						inserted.data('blockTime',time);
+						inserted.data('blockId',id);
+						inserted.data('subjectId',subject);
+						inserted.data('labelId',label);
+						if(jQuery(this).hasClass('popcornLMLastBlock')){
+							newHeight = inserted.data('fullHeight')-10;
+						}else{
+							newHeight = inserted.data('titleHeight');
+						}
+
+
+
+						inserted.addClass('popcornLMOn');	
+						inserted.animate({'height': newHeight},400);
+					
+					
+					
 					
 					
 					
