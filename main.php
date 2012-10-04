@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Popcorn Analysis
+Plugin Name: Soapbox Review
 Description: Plugin integrating Popcorn.js and Wordpress to create time-based judgments, e.g. a fact-check for a political speech or debate.
 Author: Nick Ray
 Version: 0.8
@@ -1396,8 +1396,8 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					
 					
 					
-					
-					
+					//don't forget to clear out sources
+					jQuery('.sourceTable').html('<div class="singleSource"><a class="sourceAdd button" href="#">Connect to Source</a><div class="singleSourceInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSource['+now+']" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" /><br /><a class="sourceCancelAdd" href="#">Cancel</a></div><div class="singleSourcePreview" style="display: none;"></div></div>');
 					
 					alert('Your entry has been added!');
 					
@@ -1556,7 +1556,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					updateBlock.find('.popcornLMSourceList').detach();
 					updateBlock.find('.popcornLMSourceListTitle').detach();
 				}
-				
+				jQuery('#updateSourceTable').html('');
 					alert('Your entry has been updated! Changes will show up here after your next refresh.');
 				}else{
 				//	alert(response.problem);
@@ -1629,7 +1629,10 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		<?php $optionsMeta = get_post_meta($post->ID,'popcornLMOptions',true);
 			if($optionsMeta){
 				$optionsObject = json_decode($optionsMeta);
-				$subjects = get_object_vars($optionsObject->subjects);
+				if(isset($optionsObject->subjects)){
+					$subjects = get_object_vars($optionsObject->subjects);
+				}
+			
 				$vidOutcomeTemplate = $optionsObject->vidOutcomeTemplate;
 				if($subjects!=''&&$vidOutcomeTemplate!=''){
 					//everything is set up, proceed as planned.
