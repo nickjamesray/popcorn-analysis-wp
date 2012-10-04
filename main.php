@@ -819,8 +819,7 @@ class PopcornLM {
 		global $post;
 		wp_enqueue_script('jquery');
 		wp_enqueue_script('suggest');
-		wp_enqueue_script('jquery-ui-slider');
-		wp_enqueue_style('jquery-ui-custom', plugin_dir_url(__FILE__).'css/jquery-ui-1.8.23.custom.css'); 
+		
 ?>
 <link rel="stylesheet" href="<?php echo plugin_dir_url(__FILE__).'css/style.css';?>" />
 <script type="text/javascript" src="<?php echo plugin_dir_url(__FILE__).'js/popcorn-ie8.js';?>"></script>
