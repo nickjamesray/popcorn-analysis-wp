@@ -150,7 +150,7 @@ class PopcornLM {
 		
 		
 		
-		add_shortcode('popcornLM', array($this,'shortcode'));
+		add_shortcode('soapboxLM', array($this,'shortcode'));
 	
 		$this->setClasses();
 	
@@ -632,7 +632,7 @@ class PopcornLM {
 				
 				?>
 				<div style="margin: 0 auto; margin-top: 30px; margin-bottom: 40px; border: dotted 1px #666; width: 80%;">
-			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Popcorn Analysis.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where it is relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. <a href="#" id="fullCreditList">View Full Credits.</a></p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
+			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Soapbox Review.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where it is relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. <a href="#" id="fullCreditList">View Full Credits.</a></p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
 			<div id="popcornLMInstructionBlock"><h3>Step 1: Find a Video</h3>
 			<p>Look on YouTube for a video you would like to critique (other video services available in a future release). This could be a political debate, remix video, or commentary - anything really!</p>
 			
@@ -770,7 +770,7 @@ class PopcornLM {
 	public function registerPostType(){
 	
 		  $labels = array(
-		    'name' => _x('Popcorn Analysis - Videos', 'post type general name'),
+		    'name' => _x('Soapbox Review - Videos', 'post type general name'),
 		    'singular_name' => _x('Video', 'post type singular name'),
 		    'add_new' => _x('Add New Video', 'book'),
 		    'add_new_item' => __('Add New Video'),
@@ -782,7 +782,7 @@ class PopcornLM {
 		    'not_found' =>  __('No videos found'),
 		    'not_found_in_trash' => __('No videos found in Trash'), 
 		    'parent_item_colon' => '',
-		    'menu_name' => __('Popcorn Analysis')
+		    'menu_name' => __('Soapbox Review')
 		  );
 		
 		  $args = array(
@@ -1642,7 +1642,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					//	jQuery('#addVideoLinkBox').html('').hide();
 					//	jQuery('#initOptions').show();
 					jQuery('.configLinks').append(' | <a href="#" class="changeConfig">Change Configuration</a>');
-					jQuery('#shortcodeDisplay').html('<?php echo 'To display the video/resources, paste the following shortcode into the main text box for the page you want it to show up on:<br /> [popcornLM id='.$post->ID.'] ';?>').show();
+					jQuery('#shortcodeDisplay').html('<?php echo 'To display the video/resources, paste the following shortcode into the main text box for the page you want it to show up on:<br /> [soapboxLM id='.$post->ID.'] ';?>').show();
 					});
 						</script>
 					<?php
@@ -1686,7 +1686,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				
 				
 				<h2>Step 2: Configure</h2>
-				<p>Choose what labels you will be applying to your analysis, example True/False. These can be created and customized by going to "Label Templates" under "Popcorn Analysis" in the left menu. <strong>Changing this in the future is not recommended, as it will require relabeling your content.</strong></p>
+				<p>Choose what labels you will be applying to your analysis, example True/False. These can be created and customized by going to "Label Templates" under "Soapbox Review" in the left menu. <strong>Changing this in the future is not recommended, as it will require relabeling your content.</strong></p>
 				
 			<label id="vidOutcomeLabel" style="margin-top: 5px; margin-right: 10px;" for="vidOutcomeTemplate">Outcome Template: </label>
 				
@@ -1739,7 +1739,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				
 				?>
 				<div id="subjectList" style="margin-top: 10px; padding: 5px;">
-				<p>Add people/topics here, e.g. John Smith, Jane Doe. Fewer the better, as each gets a column. Generally this will be a speaker. <em>"Spare the brevity, spoil the layout."</em><br />You can add people/topics by going to "People/Topics" under "Popcorn Analysis" in the left menu.</p>
+				<p>Add people/topics here, e.g. John Smith, Jane Doe. Fewer the better, as each gets a column. Generally this will be a speaker. <em>"Spare the brevity, spoil the layout."</em><br />You can add people/topics by going to "People/Topics" under "Soapbox Review" in the left menu.</p>
 				<?php
 				
 				if($subjects!=''&&is_array($subjects)){
