@@ -172,7 +172,7 @@ class PopcornLM {
 			echo '<link rel="stylesheet" href="'.POPCORNLM_PATH.'css/display.css" />';
 			$id = $atts['id'];
 			echo '<div id="popcornLMDisplayContainer">';
-			echo '<h3>'.get_the_title($id).'</h3>';
+			//echo '<h3>'.get_the_title($id).'</h3>';
 			
 			//now check for a video. if there isn't one, say the video is unavailable and return.
 			$custom = get_post_custom($id);
@@ -230,126 +230,127 @@ class PopcornLM {
 						
 							
 							foreach($subjects as $id=>$val){
-								
-								krsort($columnSort[$val]);
-								echo '<div class="resourceListDisplayColumn" id="subject_'.$val.'">';
-								$subjectMeta = get_post_custom($val);
-								$subjectTitle = get_the_title($val);
-								//print_r($subjectMeta);
-							//	echo '<div class="popcornLMAlert"></div>';
-									//we want to display photo on the left with name on the right
-									echo '<div class="resourceListDisplayHead">';
-									echo '<div class="resourceListDisplayHeadImage">';
-									if(isset($subjectMeta['subjectThumb'][0])&&$subjectMeta['subjectThumb'][0]!=''){
-										$imageShow = true;
-										$subjectImage = wp_get_attachment_image_src($subjectMeta['subjectThumb'][0], 'popcornlm-subject-thumb');
-										$subjectImage = $subjectImage[0];
-										echo '<img src="'.$subjectImage.'" />';
-									}else{
-										$imageShow = false;
-									}
-									echo '</div>';
-									echo '<div class="popcornLMDisplayHeadText">';
-									echo '<h4 class="popcornLMDisplayHeadTitle"';
-									if($imageShow!=true){
-									//	echo 'style="margin-left: 30%;"';
-									}
-									echo '>'.$subjectTitle.'</h4>';
-									if(isset($subjectMeta['subjectSubhead'][0])&&$subjectMeta['subjectSubhead'][0]!=''){
-										echo '<p class="popcornLMDisplayHeadByline">'.$subjectMeta['subjectSubhead'][0].'</p>';
-										//there will be a popcornsubjectinfo call here with an "info link" to bring a pop up. not yet.
-									}else{
-										//nothing should happen, this just helps us with design.
-									
-									}
-									echo '</div>';
-									echo '</div><div style="clear: both;"></div>';
-								
-								
-								foreach($columnSort[$val] as $time=>$blockArray){
-									$zIndex = 1;
-									
-								
-									foreach($blockArray as $id=>$blockInfo){
-											
-									if($blockInfo['title']!=''&&$blockInfo['text']!=''){
-										
-										echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'_'.trim($blockInfo['id']).'" style="z-index:'.$zIndex.';">';
-										echo '<div class="popcornLMBlockInner">';
-										echo '<div class="popcornLMBlockTitle">';
-									echo '<h4>'.$blockInfo['title'].'<br />';
-									echo '<span class="popcornLMBlockTime">'.gmdate('H:i:s',$blockInfo['time']).'</span>';
-									echo'</h4>';
-								
-										echo '<div class="popcornLMBlockLabelLink"><a class="popcornLMBlockExpand" >Expand</a>';
-									
-								
-											if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
-											echo '<p class="popcornLMHiddenLabel">';
-											
-											echo $labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
-											echo '<div style="clear: both;"></div>';
+								if($columnSort[$val]){
+									krsort($columnSort[$val]);
+									echo '<div class="resourceListDisplayColumn" id="subject_'.$val.'">';
+									$subjectMeta = get_post_custom($val);
+									$subjectTitle = get_the_title($val);
+
+										//we want to display photo on the left with name on the right
+										echo '<div class="resourceListDisplayHead">';
+										echo '<div class="resourceListDisplayHeadImage">';
+										if(isset($subjectMeta['subjectThumb'][0])&&$subjectMeta['subjectThumb'][0]!=''){
+											$imageShow = true;
+											$subjectImage = wp_get_attachment_image_src($subjectMeta['subjectThumb'][0], 'popcornlm-subject-thumb');
+											$subjectImage = $subjectImage[0];
+											echo '<img src="'.$subjectImage.'" />';
 										}else{
-											
-											echo '<div style="clear: both;"></div>';
+											$imageShow = false;
 										}
-									
-										echo '</div></div>';
-										echo '<div class="popcornLMBlockBody">';
-										echo html_entity_decode($blockInfo['text']);
+										echo '</div>';
+										echo '<div class="popcornLMDisplayHeadText">';
+										echo '<h4 class="popcornLMDisplayHeadTitle"';
+										if($imageShow!=true){
+										//	echo 'style="margin-left: 30%;"';
+										}
+										echo '>'.$subjectTitle.'</h4>';
+										if(isset($subjectMeta['subjectSubhead'][0])&&$subjectMeta['subjectSubhead'][0]!=''){
+											echo '<p class="popcornLMDisplayHeadByline">'.$subjectMeta['subjectSubhead'][0].'</p>';
+											//there will be a popcornsubjectinfo call here with an "info link" to bring a pop up. not yet.
+										}else{
+											//nothing should happen, this just helps us with design.
+
+										}
+										echo '</div>';
 										echo '</div><div style="clear: both;"></div>';
-										if(isset($blockInfo['sources'])&&is_array($blockInfo['sources'])){
-											$sources = count($blockInfo['sources']);
-											if($sources>1){
-												$sourceHead = 'Sources';
+
+
+									foreach($columnSort[$val] as $time=>$blockArray){
+										$zIndex = 1;
+
+
+										foreach($blockArray as $id=>$blockInfo){
+
+										if($blockInfo['title']!=''&&$blockInfo['text']!=''){
+
+											echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'_'.trim($blockInfo['id']).'" style="z-index:'.$zIndex.';">';
+											echo '<div class="popcornLMBlockInner">';
+											echo '<div class="popcornLMBlockTitle">';
+										echo '<h4>'.$blockInfo['title'].'<br />';
+										echo '<span class="popcornLMBlockTime">'.gmdate('H:i:s',$blockInfo['time']).'</span>';
+										echo'</h4>';
+
+											echo '<div class="popcornLMBlockLabelLink"><a class="popcornLMBlockExpand" >Expand</a>';
+
+
+												if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
+												echo '<p class="popcornLMHiddenLabel">';
+
+												echo $labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
+												echo '<div style="clear: both;"></div>';
 											}else{
-												$sourceHead = 'Source';
+
+												echo '<div style="clear: both;"></div>';
 											}
-											
-											
-											echo '<h6 class="popcornLMSourceListTitle">'.$sourceHead.':</h6>';
-											echo '<ul>';
-											foreach($blockInfo['sources'] as $id=>$sourceId){
-												if(is_numeric($sourceId)){
-													$name = get_the_title($sourceId);
-													$url = get_post_meta($sourceId,'sourceUrl',true);
 
-													echo '<li>';
-													if($url!=''){
-														echo '<a href="'.$url.'" class="popcornLMSourceLink" target="_blank">'.$name.'</a>';
-													}else{
-														echo $name;
-													}
-													$types = wp_get_object_terms($sourceId,'source_types');
-													if(!empty($types)){
-														$counter = 0;
-														//counter so we only put comma after first one, not before
-														echo '<span class="popcornLMSourceType">';
-														foreach($types as $type){
-															if($counter>0){
-																echo ', ';
-															}
-															echo $type->name;
-															$counter++;
-														}
-														echo '</span>';
-													}
-
-
-													echo '</li>';
+											echo '</div></div>';
+											echo '<div class="popcornLMBlockBody">';
+											echo html_entity_decode($blockInfo['text']);
+											echo '</div><div style="clear: both;"></div>';
+											if(isset($blockInfo['sources'])&&is_array($blockInfo['sources'])){
+												$sources = count($blockInfo['sources']);
+												if($sources>1){
+													$sourceHead = 'Sources';
+												}else{
+													$sourceHead = 'Source';
 												}
 
+
+												echo '<h6 class="popcornLMSourceListTitle">'.$sourceHead.':</h6>';
+												echo '<ul>';
+												foreach($blockInfo['sources'] as $id=>$sourceId){
+													if(is_numeric($sourceId)){
+														$name = get_the_title($sourceId);
+														$url = get_post_meta($sourceId,'sourceUrl',true);
+
+														echo '<li>';
+														if($url!=''){
+															echo '<a href="'.$url.'" class="popcornLMSourceLink" target="_blank">'.$name.'</a>';
+														}else{
+															echo $name;
+														}
+														$types = wp_get_object_terms($sourceId,'source_types');
+														if(!empty($types)){
+															$counter = 0;
+															//counter so we only put comma after first one, not before
+															echo '<span class="popcornLMSourceType">';
+															foreach($types as $type){
+																if($counter>0){
+																	echo ', ';
+																}
+																echo $type->name;
+																$counter++;
+															}
+															echo '</span>';
+														}
+
+
+														echo '</li>';
+													}
+
+												}
+												echo '</ul>';
+
 											}
-											echo '</ul>';
-											
+
+
+											echo '</div></div>';
 										}
-										
-										
-										echo '</div></div>';
-									}
-									}
+										}
 								}
 								echo '</div>';
+								}
+								
 							}
 							ksort($sortedTimes);
 
@@ -1038,7 +1039,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 						parent.find('.singleSubjectField').val(response.data.id);
 						
 						parent.parent().append('<div class="singleSubject"><a class="subjectAdd button" href="#">Add <br />Speaker/Topic</a><div class="singleSubjectInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSubject['+now+']" id="" class="singleSubjectField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="subjectCancelAdd" href="#">Cancel</a></div><div class="singleSubjectPreview" style="display: none;"></div></div>');
-						//alert(response.data);
+						
 					});
 				}
 				
@@ -1067,10 +1068,11 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 							now = Math.round((new Date()).getTime() / 1);
 							parent.find('.singleSourcePreview').html(output).show();
 							parent.find('.singleSourceInput').hide();
+							
 							parent.find('.singleSourceField').val(response.data.id);
 
 							parent.parent().append('<div class="singleSource"><a class="sourceAdd button" href="#">Connect to Source</a><div class="singleSourceInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSource['+now+']" id="" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="" size="10" />	<br /><a class="sourceCancelAdd" href="#">Cancel</a></div><div class="singleSourcePreview" style="display: none;"></div></div>');
-							//alert(response.data);
+							
 						});
 					}
 
@@ -1159,23 +1161,25 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		    }
 			var sources = jQuery(this).closest('.popcornLMBlockInner').find('.popcornLMSourceList li');
 			sourceOutput = '';
+			if(sources.length!=0){
+				
+		
 			sources.each(function(index){
-			//	var sourceType = jQuery(this).find('.popcornLMSourceType').html();
+			
 			
 				var sourceId = jQuery(this).attr('rel');
+				
 				var sourceUrl = jQuery(this).find('.popcornLMSourceLink').attr('href');
 				var sourceName = jQuery(this).find('.popcornLMSourceLink').html();
 				
 				
 				var now = Math.round((new Date()).getTime() / 1);
-				sourceOutput += '<div class="singleSource"><a class="sourceAdd button" href="#" style="display: none;">Connect to Source</a><div class="singleSourceInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSource['+now+']" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="'+sourceId+'" size="10" /><br /><a class="sourceCancelAdd" href="#">Cancel</a></div><div class="singleSourcePreview">'+sourceName+' <a href="#" class="sourceRemove">(remove)</a></div></div>';
 				
-				
-				
-				
-				
+				sourceOutput += '<div class="updateSingleSource"><a class="sourceAdd button" href="#" style="display: none;">Connect to Source</a><div class="singleSourceInput" style="display: none;"><small>Type and choose from the list that appears.</small><input type="text" name="singleSource['+now+']" class="singleSourceField"  onkeypress="if(event.keyCode==13) return false;" value="'+sourceId+'" size="10" /><br /><a class="sourceCancelAdd" href="#">Cancel</a></div><div class="singleSourcePreview">'+sourceName+' <a href="#" class="sourceRemove">(remove)</a></div></div>';
+
 				
 			});
+				}
 			//will change to updateSourceTable
 			jQuery('#updateSourceTable').html(sourceOutput);
 			var title = jQuery(this).closest('.popcornLMBlockInner').find('.popcornLMBlockTitle h4').html();
@@ -1470,7 +1474,8 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				var source = jQuery(this).find('.singleSourceField').val();
 				
 				if(source!=''){
-					var temp = jQuery(this).find('.singleSourceField').attr('name')
+					var temp = jQuery(this).find('.singleSourceField').attr('name');
+					
 					var tempID = temp.split("[")[1].split("]")[0];
 					sources[tempID] = source;
 				}
@@ -1532,7 +1537,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 						insert += '</li>';
 						sourceCount++;
 					});
-					alert(insert);
+					//alert(insert);
 					if(sourceCount>1){
 						sourceTitle = 'Sources:';
 					}else{
@@ -1978,109 +1983,113 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			
 				foreach($subjects as $id=>$val){
 					//this sorts them by time. They are now separated by name and sorted by time. We can display!
-					krsort($sortedBlocks[$val]);
-					echo '<div class="resourceListDisplayColumn" rel="'.$val.'">';
-					
-					
-					echo '<div class="resourceListDisplayHead">';
 				
-					echo '<div class="popcornLMDisplayHeadText">';
-					echo '<h4 class="popcornLMDisplayHeadTitle">'.get_the_title($val).'</h4>';
 					
-					echo '</div>';
-					echo '</div><div style="clear: both;"></div>';
-					
-					
-					foreach($sortedBlocks[$val] as $time=>$id){
-						//another foreach in case there are two blocks with the same time
-						foreach($id as $blockId=>$blockInfo){
-							if($blockInfo['title']!=''&&$blockInfo['text']!=''){
-
-								echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'_'.trim($blockInfo['id']).'_'.$blockInfo['subject'].'_'.$blockInfo['label'].'">';
-								echo '<div class="popcornLMBlockInner">';
-								echo '<div class="popcornLMBlockTitle">';
-								echo '<div class="popcornLMBlockTitleInner">';
-								echo '<h4>'.$blockInfo['title'].'</h4>';
-								echo '<span class="popcornLMBlockTime" rel="'.$blockInfo['time'].'">'.gmdate('H:i:s',$blockInfo['time']).'</span></div>';
-
-								echo '<div class="popcornLMBlockLabelLink"><div class="popcornLMBlockEditLinks"><span class="popcornLMBlockExpandText"><a class="popcornLMBlockExpand" href="#" style="margin-right: 5px;">Expand</a>';
-								echo ' - </span><a class="popcornLMBlockEdit" href="#updateVideoLinkBox">Edit</a> - ';
-								echo '<a class="popcornLMBlockDelete" href="#">Delete</a></div>';
+					if($sortedBlocks[$val]){
+							krsort($sortedBlocks[$val]);
+							echo '<div class="resourceListDisplayColumn" rel="'.$val.'">';
 
 
-								if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
-									echo '<p class="popcornLMHiddenLabel">';
+							echo '<div class="resourceListDisplayHead">';
 
-									echo $labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
-									echo '<div style="clear: both;"></div>';
-								}else{
-									echo '<p class="popcornLMHiddenLabel">Unlabeled</p>';
-									echo '<div style="clear: both;"></div>';
-								}
+							echo '<div class="popcornLMDisplayHeadText">';
+							echo '<h4 class="popcornLMDisplayHeadTitle">'.get_the_title($val).'</h4>';
 
-								echo '</div></div><div class="popcornLMContentArea">';
-								
-								echo html_entity_decode($blockInfo['text']);
-								echo '</div>';
-								if(isset($blockInfo['sources'])&&is_array($blockInfo['sources'])){
-									$sources = count($blockInfo['sources']);
-									if($sources>1){
-										$sourceHead = 'Sources';
+							echo '</div>';
+							echo '</div><div style="clear: both;"></div>';
+						foreach($sortedBlocks[$val] as $time=>$id){
+							//another foreach in case there are two blocks with the same time
+							foreach($id as $blockId=>$blockInfo){
+								if($blockInfo['title']!=''&&$blockInfo['text']!=''){
+
+									echo '<div class="popcornLMBlockShell popcornLMBlockShell-'.$blockInfo['label'].'" rel="'.$blockInfo['time'].'_'.trim($blockInfo['id']).'_'.$blockInfo['subject'].'_'.$blockInfo['label'].'">';
+									echo '<div class="popcornLMBlockInner">';
+									echo '<div class="popcornLMBlockTitle">';
+									echo '<div class="popcornLMBlockTitleInner">';
+									echo '<h4>'.$blockInfo['title'].'</h4>';
+									echo '<span class="popcornLMBlockTime" rel="'.$blockInfo['time'].'">'.gmdate('H:i:s',$blockInfo['time']).'</span></div>';
+
+									echo '<div class="popcornLMBlockLabelLink"><div class="popcornLMBlockEditLinks"><span class="popcornLMBlockExpandText"><a class="popcornLMBlockExpand" href="#" style="margin-right: 5px;">Expand</a>';
+									echo ' - </span><a class="popcornLMBlockEdit" href="#updateVideoLinkBox">Edit</a> - ';
+									echo '<a class="popcornLMBlockDelete" href="#">Delete</a></div>';
+
+
+									if(isset($labelMeta['colors'][$blockInfo['label']]['label'])){
+										echo '<p class="popcornLMHiddenLabel">';
+
+										echo $labelMeta['colors'][$blockInfo['label']]['label'].'</p>';
+										echo '<div style="clear: both;"></div>';
 									}else{
-										$sourceHead = 'Source';
+										echo '<p class="popcornLMHiddenLabel">Unlabeled</p>';
+										echo '<div style="clear: both;"></div>';
 									}
 
+									echo '</div></div><div class="popcornLMContentArea">';
 
-									echo '<h6 class="popcornLMSourceListTitle">'.$sourceHead.':</h6>';
-									echo '<ul class="popcornLMSourceList">';
-									foreach($blockInfo['sources'] as $id=>$sourceId){
-										if(is_numeric($sourceId)){
-											$name = get_the_title($sourceId);
-											$url = get_post_meta($sourceId,'sourceUrl',true);
-											
-											echo '<li rel="'.$sourceId.'">';
-											if($url!=''){
-												echo '<a href="'.$url.'" class="popcornLMSourceLink" target="_blank">'.$name.'</a>';
-											}else{
-												echo '<span class="popcornLMSourceLink">'.$name.'</span>';
-											}
-											$types = wp_get_object_terms($sourceId,'source_types');
-											if(!empty($types)){
-												$counter = 0;
-												//counter so we only put comma after first one, not before
-												echo '<span class="popcornLMSourceType">';
-												foreach($types as $type){
-													if($counter>0){
-														echo ', ';
-													}
-													echo $type->name;
-													$counter++;
-												}
-												echo '</span>';
-											}
-											
-
-											echo '</li>';
+									echo html_entity_decode($blockInfo['text']);
+									echo '</div>';
+									if(isset($blockInfo['sources'])&&is_array($blockInfo['sources'])){
+										$sources = count($blockInfo['sources']);
+										if($sources>1){
+											$sourceHead = 'Sources';
+										}else{
+											$sourceHead = 'Source';
 										}
-										
+
+
+										echo '<h6 class="popcornLMSourceListTitle">'.$sourceHead.':</h6>';
+										echo '<ul class="popcornLMSourceList">';
+										foreach($blockInfo['sources'] as $id=>$sourceId){
+											if(is_numeric($sourceId)){
+												$name = get_the_title($sourceId);
+												$url = get_post_meta($sourceId,'sourceUrl',true);
+
+												echo '<li rel="'.$sourceId.'">';
+												if($url!=''){
+													echo '<a href="'.$url.'" class="popcornLMSourceLink" target="_blank">'.$name.'</a>';
+												}else{
+													echo '<span class="popcornLMSourceLink">'.$name.'</span>';
+												}
+												$types = wp_get_object_terms($sourceId,'source_types');
+												if(!empty($types)){
+													$counter = 0;
+													//counter so we only put comma after first one, not before
+													echo '<span class="popcornLMSourceType">';
+													foreach($types as $type){
+														if($counter>0){
+															echo ', ';
+														}
+														echo $type->name;
+														$counter++;
+													}
+													echo '</span>';
+												}
+
+
+												echo '</li>';
+											}
+
+										}
+										echo '</ul>';
+
 									}
-									echo '</ul>';
-
-								}
 
 
-								echo '</div></div>';
-							}	else{
-									//this would happen if there were no title or text. shouldn't happen.
-									//echo 'wompsticks';
-								}
+									echo '</div></div>';
+								}	else{
+										//this would happen if there were no title or text. shouldn't happen.
+										//echo 'wompsticks';
+									}
+
+							}
+
 
 						}
-
-
+							echo '</div>';
 					}
+					
 
-					echo '</div>';
+				
 				}
 			
 			
@@ -2090,28 +2099,34 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			//print_r($sortedBlocks);
 			
 		}else{
-			$columns = count($subjects);
-			echo '<style>.resourceListDisplayColumn{width: '.(92/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; float: left; padding: '.(2/$columns).'%;  }';
-			foreach($labelMeta['colors'] as $id=>$label){
-				echo '.popcornLMBlockShell-'.$id.'{background-color:#'.$label['col'].';}';
+			if($subjects){
+				$columns = count($subjects);
+				echo '<style>.resourceListDisplayColumn{width: '.(92/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; float: left; padding: '.(2/$columns).'%;  }';
+				foreach($labelMeta['colors'] as $id=>$label){
+					echo '.popcornLMBlockShell-'.$id.'{background-color:#'.$label['col'].';}';
+				}
+				echo '</style>';
+
+
+				foreach($subjects as $id=>$val){
+					//this sorts them by time. They are now separated by name and sorted by time. We can display!
+					if($sortedBlocks){
+						krsort($sortedBlocks[$val]);
+					}
+					
+					echo '<div class="resourceListDisplayColumn" rel="'.$val.'">';
+
+
+					echo '<div class="resourceListDisplayHead">';
+
+					echo '<div class="popcornLMDisplayHeadText">';
+					echo '<h4 class="popcornLMDisplayHeadTitle">'.get_the_title($val).'</h4>';
+
+					echo '</div>';
+					echo '</div><div style="clear: both;"></div></div>';
+				}
 			}
-			echo '</style>';
-		
-		
-			foreach($subjects as $id=>$val){
-				//this sorts them by time. They are now separated by name and sorted by time. We can display!
-				krsort($sortedBlocks[$val]);
-				echo '<div class="resourceListDisplayColumn" rel="'.$val.'">';
-				
-				
-				echo '<div class="resourceListDisplayHead">';
 			
-				echo '<div class="popcornLMDisplayHeadText">';
-				echo '<h4 class="popcornLMDisplayHeadTitle">'.get_the_title($val).'</h4>';
-				
-				echo '</div>';
-				echo '</div><div style="clear: both;"></div></div>';
-			}
 		}
 		
 		?>

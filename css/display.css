@@ -24,8 +24,8 @@
 	margin: 0 auto;
 	text-align: center;
 	font-family: Arial, sans-serif;
-	min-height: 60px;
-	margin-bottom: 10px;
+	min-height: 70px;
+	margin-bottom: 5px;
 }
 
 #popcornLMAlert > div{
@@ -143,6 +143,7 @@
 	color: black;
 	font-weight: normal;
 	font-style: italic;
+	padding: 0 3px;
 }
 
 .popcornLMBlockInner h4{
@@ -188,6 +189,7 @@
 	display: block;
 	
 	float: left;
+	cursor: pointer;
 }
 .popcornLMHiddenLabel{
 	text-align: right;

@@ -214,7 +214,7 @@ class PopcornLM_Ajax {
 				$titleCheck = strtolower($title);
 				if(strpos($titleCheck,$q)!==false){
 					echo get_the_title();
-					echo "\n";
+					echo "<span class='subjectListID' style='display: none;'>--_".get_the_id()."--_</span>\n";
 				}
 	
 				endwhile;
@@ -237,7 +237,7 @@ class PopcornLM_Ajax {
 				$titleCheck = strtolower($title);
 				if(strpos($titleCheck,$q)!==false){
 					echo get_the_title();
-					echo "\n";
+					echo "<span class='sourceListID' style='display: none;'>--_".get_the_id()."--_</span>\n";
 				}
 				
 				endwhile;
@@ -249,11 +249,14 @@ class PopcornLM_Ajax {
 	public function SingleSubject(){
 		
 		$array = array();
-		$subject = get_page_by_title($_GET['subject'],ARRAY_A,'popcornlm_subjects');
+		$subjectParse = explode('--_',$_GET['subject']);
+		$title = explode('<span',$subjectParse[0]);
+		$title = $title[0];
+		$subjectId = $subjectParse[1];
 		
-		$array['title'] = $_GET['subject'];
-		$array['id'] = $subject['ID'];
-		$subjectMeta = get_post_custom($subject['ID']);
+		$array['title'] = $title;
+		$array['id'] = $subjectId;
+		$subjectMeta = get_post_custom($subjectId);
 		if(!empty($subjectMeta['subjectThumb'])){
 			 $image = wp_get_attachment_image_src($subjectMeta['subjectThumb'][0], 'popcornlm-subject-thumb');
 			$array['image'] = $image[0];
@@ -272,10 +275,14 @@ class PopcornLM_Ajax {
 	public function SingleSource(){
 		
 		$array = array();
-		$source = get_page_by_title($_GET['source'],ARRAY_A,'popcornlm_sources');
+	
+		$sourceParse = explode('--_',$_GET['source']);
+		$title = explode('<span',$sourceParse[0]);
+		$title = $title[0];
+		$sourceId = $sourceParse[1];
 		
-		$array['title'] = $_GET['source'];
-		$array['id'] = $source['ID'];
+		$array['title'] = $title;
+		$array['id'] = $sourceId;
 	//	$sourceMeta = get_post_custom($source['ID']);
 		
 		// if(!empty($sourceMeta['subjectSubhead'])){
