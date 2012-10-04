@@ -125,6 +125,31 @@ class PopcornLM_Ajax {
 						//either the update happened or there were no changes
 						$array['response'] = 'success';
 						$array['message'] = 'Your entry has been updated!';
+						$array['data']['oldRel'] = $old['time'].'_'.$old['id'].'_'.$old['subject'].'_'.$old['label']; 
+						if(!empty($entry['sources'])){
+							$counter = 0;
+							foreach($entry['sources'] as $sourceId){
+								$array['data']['sources'][$counter]['id'] = $sourceId;
+								$array['data']['sources'][$counter]['title'] = get_the_title($sourceId);
+								$array['data']['sources'][$counter]['url'] = get_post_meta($sourceId,'sourceUrl',true);
+								$types = wp_get_object_terms($sourceId,'source_types');
+								$array['data']['sources'][$counter]['types'] = '';
+								if(!empty($types)){
+									$count = count($types);
+									foreach($types as $type){
+										$array['data']['sources'][$counter]['types'] .= $type->name;
+										if($count>1){
+											$array['data']['sources'][$counter]['types'] .= ', ';
+										}
+										$count--;
+									}
+								}
+								$counter++;
+							}
+						}else{
+							$array['data']['sources'] = 'none';
+						}
+						
 					}else{
 						$array['response'] = 'fail';
 						$array['message'] = 'There was a system error. Please try again.';

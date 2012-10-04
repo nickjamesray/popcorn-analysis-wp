@@ -307,7 +307,7 @@ class PopcornLM {
 											}
 											
 											
-											echo '<h6>'.$sourceHead.':</h6>';
+											echo '<h6 class="popcornLMSourceListTitle">'.$sourceHead.':</h6>';
 											echo '<ul>';
 											foreach($blockInfo['sources'] as $id=>$sourceId){
 												if(is_numeric($sourceId)){
@@ -632,7 +632,25 @@ class PopcornLM {
 				?>
 				<div style="margin: 0 auto; margin-top: 30px; margin-bottom: 40px; border: dotted 1px #666; width: 80%;">
 			       <h1 style="padding: 5px; text-align: center; margin-bottom: 0px;">Welcome to Popcorn Analysis.</h1> <p style="padding: 10px; text-align: center;">This system allows you to hook into online video and critique, fact-check, or otherwise evaluate the content. Visitors will see your analysis show up at the point in the video where it is relevant. Developed by <a href="http://nickjamesray.com/" target="_blank">Nick Ray</a>. Popcorn.js developed by Mozilla. <a href="#" id="fullCreditList">View Full Credits.</a></p><h3 style="text-align: center;"><a href="#" class="popcornLMInstructionLink">Show Instructions</a> | <a href="post-new.php?post_type=popcornlm">Add Video</a> | <a href="edit.php?post_type=popcornlm_subjects">Manage People/Topics</a> | <a href="edit.php?post_type=popcornlm_labels">Manage Label Templates</a></h3>
-			<p id="popcornLMInstructionBlock">there.</p>
+			<div id="popcornLMInstructionBlock"><h3>Step 1: Find a Video</h3>
+			<p>Look on YouTube for a video you would like to critique (other video services available in a future release). This could be a political debate, remix video, or commentary - anything really!</p>
+			
+			<h3>Step 2: Decide & Create Labels</h3>
+			<p>How are you going to judge the video? True or untrue? Funny or not? Decide what labels you will apply, then choose "Manage Label Templates" above to create the template/color scheme, or choose from what is already available.</p>
+			
+			<h3>Step 3: Choose your People/Topics</h3>
+			<p>Is this a speech by Obama? A discussion of climate change? Search for your person or topic under "Manage People/Topics" above. If the record doesn't exist yet, create a new entry!</p>
+			
+			<h3>Step 4: Set up your Video</h3>
+			<p>Now you can create a new video using the links below. Inside, you will first need to paste in your YouTube link, and then choose your label template and people/topics you want to critique. Note that changing these after the fact is not recommended, so plan ahead.</p>
+			
+			<h3>Step 5: Judge away!</h3>
+			<p>Scrub to the time in the video you want to critique, provide a title, choose your label, person/topic, and some text. If there are sources to support your claims, add them under "Sources" in the left column, then link to those sources in the form.</p>
+			
+			<h3>Step 6: Publish</h3>
+			<p>At the top of the video edit screen, you should see a "shortcode." Copy/paste this into an existing or new Page in Wordpress, and watch the magic happen.</p>
+			
+			</div>
 			
 		
 			<script type="text/javascript">
@@ -1121,11 +1139,17 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			e.preventDefault();
 		});
 		
+		jQuery('.cancelUpdate').live('click',function(e){
+			jQuery('#updateVideoLinkBox').hide();
+			jQuery('#addVideoLinkBox').show();
+			e.preventDefault();
+		});
+		
 		jQuery('.popcornLMBlockEdit').live('click',function(e){
-			//e.preventDefault();
 			jQuery('#updateVideoLinkBox').show();
-			jQuery('#addVideoLinkBox').slideUp('slow');
+			jQuery('#addVideoLinkBox').hide();
 			
+			//e.preventDefault();
 			var content = jQuery(this).closest('.popcornLMBlockShell').find('.popcornLMContentArea').html();
 			if (jQuery("#wp-popcorninfobody-wrap").hasClass("tmce-active")){
 				//popcornupdateinfobody is the ID
@@ -1165,11 +1189,12 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			//we need to update value, the text, and move the playhead to that time. we will also need to save the old value for returning.
 			//#videoTimeHidden is normal, we will need one for update
 			var readTime = secondsToMinutesHours(time);
-			jQuery('#videoTimeHidden').data('oldTime',time);
+			
 			var id = jQuery(this).closest('.popcornLMBlockShell').data('blockId')
 			jQuery('#updateVideoId').val(id);
 			//now we update popcorn, which will filter the other events down.
 			if(pop){
+				jQuery('#videoTimeHidden').data('oldTime',pop.currentTime());
 				pop.currentTime(time);
 			}
 		
@@ -1278,9 +1303,9 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				
 				if(sources.length>0){
 					if(sources.length>1){
-						insert += '<h6>Sources:</h6>';
+						insert += '<h6 class="popcornLMSourceListTitle">Sources:</h6>';
 					}else{
-						insert += '<h6>Source:</h6>';
+						insert += '<h6 class="popcornLMSourceListTitle">Source:</h6>';
 					}	
 				}
 
@@ -1320,20 +1345,26 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				});
 				var initLength = blockList.length;
 				
-				blockList.push(time);
+				if(initLength!=0){
+					blockList.push(time);
+
+					//sorts by time (ascending) and then reverses it, so we have the proper spot.
+					blockList.sort();
+					blockList.reverse();
+
+					//returns index, or key, for where that time landed after the sort.
+					var i = jQuery.inArray(time,blockList);
+						if(i==initLength){
+							column.append(insert);
+						}else{
+
+							jQuery(column.children('.popcornLMBlockShell')[i]).before(insert);
+						}
+				}else{
+					column.append(insert);
+					var only = 'yes';
+				}
 				
-				//sorts by time (ascending) and then reverses it, so we have the proper spot.
-				blockList.sort();
-				blockList.reverse();
-					
-				//returns index, or key, for where that time landed after the sort.
-				var i = jQuery.inArray(time,blockList);
-					if(i==initLength){
-						column.append(insert);
-					}else{
-						
-						jQuery(column.children('.popcornLMBlockShell')[i]).before(insert);
-					}
 					
 					var inserted = jQuery('.popcornLMBlockShell[rel="'+relInsert+'"]');
 					//last but not least, we need to apply the data rules so it can be edited like any other.
@@ -1349,7 +1380,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 						inserted.data('blockId',id);
 						inserted.data('subjectId',subject);
 						inserted.data('labelId',label);
-						if(jQuery(this).hasClass('popcornLMLastBlock')){
+						if(jQuery(this).hasClass('popcornLMLastBlock')||only=='yes'){
 							newHeight = inserted.data('fullHeight')-10;
 						}else{
 							newHeight = inserted.data('titleHeight');
@@ -1447,11 +1478,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 	
 			});
 		
-			
-			
-			
-		
-			
+
 			var data = {
 				action : 'popcornlm-update-video-record',
 				time : time,
@@ -1468,12 +1495,65 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 			//okay we are ready to make our ajax call!
 			
 			jQuery.post(ajaxurl, data, function(response){
-				alert(response.response);
+			
 				if(response.response=='success'){
-					//we need to update the time in the box for the next entry.
+					//we need to update the time in the box for the original entry.
+					var oldTime = jQuery('#videoTimeHidden').data('oldTime');
+					if(pop){
+						var newTime = parseInt(oldTime);
+						pop.currentTime(newTime);
+					}
+					jQuery('#updateVideoLinkBox').hide();
+					jQuery('#addVideoLinkBox').show();
 				//	var now = Math.round((new Date()).getTime() / 10);
 				//	jQuery('#timeOfPost').val(now);
-				//	alert('Your entry has been added!');
+				
+				//last, we need to send the new values into the place of the old ones.
+				
+				//this nabs our element
+				var updateBlock = jQuery('.popcornLMBlockShell[rel="'+response.data.oldRel+'"]');
+				
+				updateBlock.find('.popcornLMBlockTitleInner h4').html(title);
+				updateBlock.find('.popcornLMContentArea').html(text);
+				var insert = '';
+				var sourceCount = 0;
+				
+				if(response.data.sources!='none'){
+					//there are sources to iterate. yay!
+					jQuery.each(response.data.sources,function(k,val){
+						insert += '<li rel="'+val.id+'">';
+						if(val.url!=''){
+							insert += '<a href="'+val.url+'" class="popcornLMSourceLink" target="_blank">'+val.title+'</a>';
+						}else{
+							insert += '<span class="popcornLMSourceLink">'+val.title+'</span>';
+						}
+						if(val.types!=''){
+							insert += '<span class="popcornLMSourceType">'+val.types+'</span>';
+						}
+						insert += '</li>';
+						sourceCount++;
+					});
+					alert(insert);
+					if(sourceCount>1){
+						sourceTitle = 'Sources:';
+					}else{
+						sourceTitle = 'Source:';
+					}
+					
+					if(updateBlock.find('.popcornLMSourceList').length){
+						updateBlock.find('.popcornLMSourceList').html(insert);
+						updateBlock.find('.popcornLMSourceListTitle').html(sourceTitle);
+					}else{
+						updateBlock.find('.popcornLMContent').after('<h6 class="popcornLMSourceListTitle">'+sourceTitle+'</h6><ul class="popcornLMSourceList">'+insert+'</ul>');
+					}
+					
+				}else{
+					//erase what was there
+					updateBlock.find('.popcornLMSourceList').detach();
+					updateBlock.find('.popcornLMSourceListTitle').detach();
+				}
+				
+					alert('Your entry has been updated! Changes will show up here after your next refresh.');
 				}else{
 				//	alert(response.problem);
 				}
@@ -1520,6 +1600,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		?>
 		<input type="hidden" name="idOfPost" id="idOfPost" value="<?php echo $post->ID; ?>" />
 		<div id="adminPopcornWrapper">
+		<div id="shortcodeDisplay" style="display: none;"></div>
 		<div id="adminPopcorn" ></div>
 		<?php
 		
@@ -1554,6 +1635,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 					//	jQuery('#addVideoLinkBox').html('').hide();
 					//	jQuery('#initOptions').show();
 					jQuery('.configLinks').append(' | <a href="#" class="changeConfig">Change Configuration</a>');
+					jQuery('#shortcodeDisplay').html('<?php echo 'To display the video/resources, paste the following shortcode into the main text box for the page you want it to show up on:<br /> [popcornLM id='.$post->ID.'] ';?>').show();
 					});
 						</script>
 					<?php
@@ -1749,7 +1831,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		<br /><h2>Justification of Label:</h2>
 		<?php
 		$args = array(
-			'textarea_rows'=>6
+			'textarea_rows'=>4
 		
 			
 		);
@@ -1772,7 +1854,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		<div class="singleSourcePreview" style="display: none;"></div>
 		</div>
 			
-		<p style="text-align: right;"><a class="button-primary updateResource" href="#" >Update Record</a></p>
+		<p style="text-align: right;"><a style="color: red; padding-right: 10px;" href="#" class="cancelUpdate">Cancel</a> <a class="button-primary updateResource" href="#" >Update Record</a></p>
 		
 		
 		</div><!-- end of resourceInfoContainer-->
@@ -1821,14 +1903,12 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		
 		<br /><h2>Justification of Label:</h2>
 		<?php
-		$args = array(
-			'textarea_rows'=>4
-		//	'quicktags'=>false
-			
+		$args1 = array(
+			'textarea_rows'=>4,
 		);
 	
 		
-		wp_editor('','popcorninfobody',$args);
+		wp_editor('','popcorninfobody',$args1);
 		
 	
 		 ?><br />
@@ -1885,9 +1965,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 				
 			
 			}
-			$columns = count($subjects);
-			//more columns, less space for each. we'll need to set a min-width but not right now.
-		//	echo '<style>.resourceListColumn{width: '.(97/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; }</style>';
+			
 			
 			
 			
@@ -1954,7 +2032,7 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 									}
 
 
-									echo '<h6>'.$sourceHead.':</h6>';
+									echo '<h6 class="popcornLMSourceListTitle">'.$sourceHead.':</h6>';
 									echo '<ul class="popcornLMSourceList">';
 									foreach($blockInfo['sources'] as $id=>$sourceId){
 										if(is_numeric($sourceId)){
@@ -2012,22 +2090,35 @@ fullHeight = fullHeight-10;	jQuery(this).find('.popcornLMBlockShell:last').data(
 		
 			//print_r($sortedBlocks);
 			
+		}else{
+			$columns = count($subjects);
+			echo '<style>.resourceListDisplayColumn{width: '.(92/$columns).'%; margin-left: '.(1/$columns).'%; margin-right: '.(1/$columns).'%; float: left; padding: '.(2/$columns).'%;  }';
+			foreach($labelMeta['colors'] as $id=>$label){
+				echo '.popcornLMBlockShell-'.$id.'{background-color:#'.$label['col'].';}';
+			}
+			echo '</style>';
+		
+		
+			foreach($subjects as $id=>$val){
+				//this sorts them by time. They are now separated by name and sorted by time. We can display!
+				krsort($sortedBlocks[$val]);
+				echo '<div class="resourceListDisplayColumn" rel="'.$val.'">';
+				
+				
+				echo '<div class="resourceListDisplayHead">';
+			
+				echo '<div class="popcornLMDisplayHeadText">';
+				echo '<h4 class="popcornLMDisplayHeadTitle">'.get_the_title($val).'</h4>';
+				
+				echo '</div>';
+				echo '</div><div style="clear: both;"></div></div>';
+			}
 		}
 		
 		?>
 		<div style="clear: both;"></div>
 		
 		</div>
-		
-		<?php
-		
-		
-		
-		
-	
-		
-		?>
-		
 		
 		<?php
 	}
